@@ -5,8 +5,11 @@ Model performance is verified on Archive II dataset of sequences and structures,
 # Installation guide for WSL VSCode
 
 install Python 3.12 on WSL
+
 install WSL extension for VScode
+
 open working directory in WSL:UBUNTU in VSCode
+
 install Gurobi with academic license
 
 ## ENVIRONMENT SETUP
@@ -26,6 +29,7 @@ Set correct python interpreter: Ctrl+Shift+P -> Python: Select Interpreter -> En
 extract archiveii.tar to the code parent directory 
 
 ### RNAstructure 
+
 install RNAstructure from tarball
 
 add the path
@@ -33,17 +37,27 @@ add the path
 `echo 'export PATH=$HOME/path/to/RNAstructure/exe:$PATH' >> ~/.bashrc`
 
 ### ViennaRNA (RNAfold)
+
 sudo apt update
+
 sudo apt install -y build-essential libgsl-dev python3-dev swig python3-pip pkg-config
+
 wget https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_7_x/ViennaRNA-2.7.2.tar.gz
+
 tar -xvzf ViennaRNA-2.7.2.tar.gz
+
 cd ViennaRNA-2.7.2
+
 ./configure --prefix=$HOME/path/to/ViennaRNA
+
 make
+
 make check
+
 make install
 
 echo 'export PATH="$HOME/path/to/ViennaRNA/bin:$PATH"' >> ~/.bashrc
+
 echo 'export LD_LIBRARY_PATH="$HOME/path/to/ViennaRNA/lib:$LD_LIBRARY_PATH"' >> ~/.bashrc
 
 ### UNAfold
@@ -54,18 +68,23 @@ export PATH="$HOME/path/to/unafold/bin:$PATH"
 
 ## CODE RUN
 1. In constants_paths.py set the range of lengths of the sequences to test. for example:
+
     len_start = 0
+
     len_end = 50
 
 2. Run prepro_run.py to initialize all folder names, paths and to prepare files for testing and references in correct format.
 
 3. In store_results.py set the range of sequences to test. For example to run model on one first sequence in the list set:
+
     n1 = 0
+
     n2 = 1
     
     To run code on all sequences set:
 
     n1 = 0
+    
     n2 = len(seq_files)
 
 4. Run store_results.py to solve the LILP model and store the results in *ilp_results.txt*
