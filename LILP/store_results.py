@@ -29,8 +29,8 @@ add_column(results_df, 'MFE_vienna', vienna_MFEs)
 add_column(results_df, 'MFE_unafold', unafold_MFEs)
 print(results_df)
 
-n1 = 0
-n2 = 1 #len(seq_files)
+n1 = 17
+n2 = 18 #len(seq_files)
 
 for seq_no in range (n1, n2):
 
@@ -54,10 +54,11 @@ for seq_no in range (n1, n2):
     # hairpin = True
     # internal = True
     # bulge = True
-    # branch = False 
+    # branch = True 
+    # cbranch = False
     # start = False
     
-    # cut_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, start_name, stem, hairpin, internal, bulge, branch, lpstart_dir, incumbent_dir, solstart_dir, first, last)
+    # cut_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, start_name, stem, hairpin, internal, bulge, branch, cbranch, lpstart_dir, incumbent_dir, solstart_dir, first, last)
 
     # f1_gen, fbeta_gen, MCC_gen, f1_rnastruct, fbeta_rnastruct, MCC_rnastruct, f1_vienna, fbeta_vienna, MCC_vienna, f1_unafold, fbeta_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, solstart_dir, start_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir, 0)
 
@@ -67,14 +68,15 @@ for seq_no in range (n1, n2):
     hairpin = True
     internal = True
     bulge = True
-    multi = False
     branch = True
+    cbranch = False    
+    # multi = False
     start = False 
 
     #### NO START VERSION ####
-    gen_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, lp_dir, incumbent_dir, sol_dir, first, last)
+    gen_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last)
     #### WITH START VERSION ####
-    # gen_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, lp_dir, incumbent_dir, sol_dir, first, last, start, start_name, solstart_dir)
+    # gen_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last, start, start_name, solstart_dir)
    
     f1_gen, fbeta_gen, MCC_gen, f1_rnastruct, fbeta_rnastruct, MCC_rnastruct, f1_vienna, fbeta_vienna, MCC_vienna, f1_unafold, fbeta_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, sol_dir, model_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir, start)
 

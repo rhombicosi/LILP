@@ -7,20 +7,19 @@ import re
 import RNA
 import tempfile
 # uncomment to run code in lilp.py
-# from utils.constants_paths import *
+from utils.constants_paths import *
 # uncomment to run prepro_run
-from constants_paths import *
+# from constants_paths import *
 
 def sort_numeric_alpha(lst):
     def numeric_alpha_key(s):
         return [int(part) if part.isdigit() else part for part in re.findall(r'\d+|\D+', s)]
     return sorted(lst, key=numeric_alpha_key)
 
-# gets all filenames of a given type in a given directory
 def get_filenames(dir_path, f_type):
     f_list = []
 
-    for file in os.listdir(dir_path):
+    for file in sorted(os.listdir(dir_path)):
         if file.endswith(f_type):
             f_list.append(os.path.join(dir_path, file))        
     return f_list
@@ -188,8 +187,6 @@ def ct2dot(ct_files, first_file, last_file, dot_bracket_dir):
 
         result = subprocess.run(['ct2dot', ct, '1', f'{dot_bracket_dir}/{ct_name_without_ext + ".txt"}'], capture_output=True, text=True)
         print(result.stdout)
-        
-
 
 # generate .ct with RNA structure
 def rnastruct_fold(seq_files, first_file, last_file, fold_dir):

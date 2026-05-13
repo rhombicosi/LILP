@@ -5,10 +5,10 @@ from hairpinloop import *
 from internalloop import *
 from bulgeloop import *
 from multiloop import *
+from branch import *
 from utils.constants_paths import *
 from utils.prepro_run import *
 from utils.prepro_utils import *
-
 
 def pairs2brackets(filepath, RNA): 
     lngth = len(RNA)
@@ -85,7 +85,7 @@ def calculate_sol_energy(filepath, rna):
     for line in lines:
         if line.strip().endswith('1'):
             # Extract type strictly as a whole word before the first underscore
-            type_match = re.match(r'^(STEM|HAIRPIN|INTERNAL|BULGE|MULTI)_', line)
+            type_match = re.match(r'^(STEM|HAIRPIN|INTERNAL|BULGE|MULTI|BRANCH|BP|CBRANCH)_', line)
             if type_match:
                 element_type = type_match.group(1)
                 
@@ -132,6 +132,28 @@ def calculate_sol_energy(filepath, rna):
                     multiloop = MultiLoop((bp1, bp2, bp3), rna)
                     print(f'{element_type} :: ({i1}, {j1}), ({i2}, {j2}) , ({i3}, {j3}) :: {multiloop.energy}')
                     energy += multiloop.energy
+
+                if element_type == 'BRANCH':
+                    i1, j1, i2, j2 = indices
+                    bp1 = BasePair(i1, j1, rna)
+                    bp2 = BasePair(i2, j2, rna)
+                    branch = InternalBranch((bp1, bp2), rna)
+                    print(f'{element_type} :: ({i1}, {j1}), ({i2}, {j2}) :: {branch.energy}')
+                    energy += branch.energy
+                
+                if element_type == 'BP':
+                    i, j = indices
+                    branch = BranchPair(i, j, rna)
+                    print(f'{element_type} :: ({i}, {j}) :: {branch.energy}')
+                    energy += branch.energy
+
+                if element_type == 'CBRANCH':
+                    i1, j1, i2, j2 = indices
+                    bp1 = BasePair(i1, j1, rna)
+                    bp2 = BasePair(i2, j2, rna)
+                    cbranch = ClosingBranch((bp1, bp2), rna)
+                    print(f'{element_type} :: ({i1}, {j1}), ({i2}, {j2}) :: {cbranch.energy}')
+                    energy += cbranch.energy
     print(energy)
 
 def sol_analyse(seq_files, seq_number, sol_dir, model_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, dot_bracket_unafold_dir, start):

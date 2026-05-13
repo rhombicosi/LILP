@@ -16,17 +16,17 @@ def cut_callback(model, where):
         obj_bound = model.cbGet(GRB.Callback.MIP_OBJBND)
         print(f'Cuts used so far: {cuts}, At MIP callback: Best={obj_best}, Bound={obj_bound}')
 
-def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None) -> None:
+def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, cbranch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None) -> None:
     
     model_start_time = time.time()
     rna_model = LILP(rna, model_name)
-    rna_model.create_variables(stem, hairpin, internal, bulge, branch, first, last)
-    rna_model.create_constraints(stem, hairpin, internal, bulge, branch, first, last)
-    rna_model.create_objective(stem, hairpin, internal, bulge, branch)
+    rna_model.create_variables(stem, hairpin, internal, bulge, branch, cbranch, first, last)
+    rna_model.create_constraints(stem, hairpin, internal, bulge, branch, cbranch, first, last)
+    rna_model.create_objective(stem, hairpin, internal, bulge, branch, cbranch)
 
     # rna_model.create_cut(stem, hairpin, internal, bulge, 0, -1523)
       
-    # rna_model.model.addConstr(rna_model.model.getVarByName(f'STEM_5_68_6_67') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'INTERNAL_5_39_11_36') == 1)
 
     model_time = time.time() - model_start_time
     print(f'MODEL CONSTRUCTION TIME :: {model_time}')
@@ -45,42 +45,16 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.setParam("RelaxLiftCuts", 2)
     # rna_model.model.setParam("MIPFocus", 3)
     # rna_model.model.setParam("Heuristics", 0)
-    rna_model.model.setParam("TimeLimit", 3600)
+    # rna_model.model.setParam('Cuts', 2)        # aggressiveness 0-3
+    # rna_model.model.setParam('GomoryPasses', 5) # explicit Gomory cut rounds
+    # rna_model.model.setParam('CoverCuts', 2)    # knapsack cover aggressiveness
+    # rna_model.model.setParam('MIRCuts', 2)      # MIR cut aggressiveness
+    # rna_model.model.setParam('CliqueCuts', 2)   # clique cut aggressiveness
+    rna_model.model.setParam("TimeLimit", 1200)
     rna_model.model.setParam("MIPGap", 0.002)
-    rna_model.model.setParam("Threads", 32)
+    rna_model.model.setParam("Threads", 24)
+    rna_model.model.setParam("NodefileStart", 0.5)  # start disk swapping earlier
     
-    # sorted_bp = sorted(rna_model.base_pairs, key=lambda x: x.distance)
-    # for bp in sorted_bp:
-    #     bp.var.setAttr("BranchPriority", 10 * bp.distance)
-
-    # if hairpin:
-    #     for hl in rna_model.hairpin_loops:
-    #         if hl.is_valid_size():
-    #             hl.var.setAttr("BranchPriority", round(200/hl.size))
-    #         else:
-    #             hl.var.setAttr("BranchPriority", 0)
-    
-    # if stem:
-    #     # sorted_stems = sorted(rna_model.stem_loops, key=lambda x: x.distance)   
-    #     for sl in rna_model.stem_loops:
-    #         sl.var.setAttr("BranchPriority", 10 * sl.distance)
-  
-    # if internal:
-    #     for il in rna_model.internal_loops:
-    #         il.var.setAttr("BranchPriority", round(2000/(il.energy+1)))    
-
-    # if bulge:
-    #     sorted_bulges = sorted(rna_model.bulge_loops, key=lambda x: x.size)
-    #     for bl in sorted_bulges:
-    #         bl.var.setAttr("BranchPriority", round(100/bl.size))
-
-    # if multi:
-    #     for ml in rna_model.multi_loops:
-    #         if ml.size == 0:
-    #             ml.var.setAttr("BranchPriority", round(100/(ml.size + 1)))
-    #         else:
-    #             ml.var.setAttr("BranchPriority", round(100/ml.size))
-
     if start:
         rna_model.model.NumStart = 1
         rna_model.model.update()
