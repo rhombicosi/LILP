@@ -3,19 +3,6 @@ from utils.constants_paths import *
 from utils.prepro_run import *
 from lilp import *
 
-def cut_callback(model, where):
-    if where == GRB.Callback.MIPNODE:
-        # cuts found at node
-        cuts = model.cbGet(GRB.Callback.MIP_CUTCNT)
-        obj_best = model.cbGet(GRB.Callback.MIPNODE_OBJBST)
-        # You can print or save this info
-        print(f'Node cuts: {cuts}, Best Obj: {obj_best}')
-    elif where == GRB.Callback.MIP:
-        cuts = model.cbGet(GRB.Callback.MIP_CUTCNT)
-        obj_best = model.cbGet(GRB.Callback.MIP_OBJBST)
-        obj_bound = model.cbGet(GRB.Callback.MIP_OBJBND)
-        print(f'Cuts used so far: {cuts}, At MIP callback: Best={obj_best}, Bound={obj_bound}')
-
 def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, cbranch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None) -> None:
     
     model_start_time = time.time()
@@ -24,9 +11,16 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     rna_model.create_constraints(stem, hairpin, internal, bulge, branch, cbranch, first, last)
     rna_model.create_objective(stem, hairpin, internal, bulge, branch, cbranch)
 
-    # rna_model.create_cut(stem, hairpin, internal, bulge, 0, -1523)
-      
-    # rna_model.model.addConstr(rna_model.model.getVarByName(f'INTERNAL_5_39_11_36') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'P_7_47') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'P_24_40') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_41') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_42') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_43') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_44') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_45') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_46') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'Y_7_47_24_40') == 1)      
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'CBRANCH_7_47_24_40') == 1)
 
     model_time = time.time() - model_start_time
     print(f'MODEL CONSTRUCTION TIME :: {model_time}')
@@ -50,7 +44,7 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.setParam('CoverCuts', 2)    # knapsack cover aggressiveness
     # rna_model.model.setParam('MIRCuts', 2)      # MIR cut aggressiveness
     # rna_model.model.setParam('CliqueCuts', 2)   # clique cut aggressiveness
-    rna_model.model.setParam("TimeLimit", 1200)
+    rna_model.model.setParam("TimeLimit", 2400)
     rna_model.model.setParam("MIPGap", 0.002)
     rna_model.model.setParam("Threads", 24)
     rna_model.model.setParam("NodefileStart", 0.5)  # start disk swapping earlier

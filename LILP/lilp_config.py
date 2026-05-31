@@ -17,11 +17,11 @@ Cbulge = -0.9
 
 # multiloop params
 # Mathews
-# A = 9.1 # intitiation
-# B = -0.6 # branches
+# A = 8.4 # intitiation
+# B = -0.8 # branches
 # C = 0.0 # unpaired nucleotides
-A = 4.3#9.3#3.4#10.1 # intitiation
-B = 0.4#-0.6#0.4#-0.3 # branches
+A = 1.1#9.3#3.4#10.1 # intitiation
+B = 0.1#0.6#-0.6#0.4#-0.3 # branches
 C = -0.3 # unpaired nucleotides
 # Logarithmic
 # A = 10.1 # intitiation
@@ -56,12 +56,22 @@ class InternalType(Enum):
 
 MAX_LOOP_SIZES = {
         LoopType.HAIRPIN: 10,
-        LoopType.INTERNAL: 8,
+        LoopType.INTERNAL: 12,
         LoopType.BULGE: 5,
         LoopType.MULTI: 8,
         LoopType.BRANCH: 8,
-        LoopType.BRANCHPAIR: 5,
+        LoopType.BRANCHPAIR: 7,
         LoopType.CBRANCH: 8
+    }
+
+MIN_LOOP_SIZES = {
+        LoopType.HAIRPIN: 3,
+        LoopType.INTERNAL: 2,
+        LoopType.BULGE: 1,
+        LoopType.MULTI: 14,
+        LoopType.BRANCH: 7,
+        LoopType.BRANCHPAIR: 7,
+        LoopType.CBRANCH: 14
     }
 
 MAX_NUM_OF_LOOPS = {

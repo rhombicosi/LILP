@@ -141,8 +141,8 @@ class LILP:
                     branch.add_variable(self.model)
                     self.cbranches.append(branch)                    
 
-                    aux = self.model.addVar(vtype=GRB.BINARY, name=f'Y_{bp1.i}_{bp1.j}_{bp2.i}_{bp2.j}')  
-                    self.auxiliary.append(aux) 
+                    # aux = self.model.addVar(vtype=GRB.BINARY, name=f'Y_{bp1.i}_{bp1.j}_{bp2.i}_{bp2.j}')  
+                    # self.auxiliary.append(aux) 
         self.model.update()
 
 
@@ -282,8 +282,10 @@ class LILP:
 
     def add_branch_constraints(self) -> None:
         for b in self.branches:
-            b.create_branch_ifthen_constraint(self.model)
-            # b.create_branch_onlyif_constraint(self.model, self.base_pairs)
+            if b.energy > 0:
+                b.create_branch_ifthen_constraint(self.model)
+            else:
+                b.create_branch_onlyif_constraint(self.model, self.base_pairs)
         self.model.update() 
 
     def add_branch_pairs_constraints(self) -> None:
@@ -294,17 +296,6 @@ class LILP:
                 bp.create_branch_pair_onlyif_constraints(self.model, self.branches)
         self.model.update()
 
-    # def add_branch_pairs_constraints(self) -> None:
-    #     for bp in self.branch_pairs:
-    #         bp_branches = InternalBranch._find_branches_with_pair(self.branches, bp)
-    #         if len(bp_branches) != 0:
-    #             for bpb in bp_branches:
-    #                 self.model.addConstr(bp.var >= bpb.var, f'BP-{bp.i}-{bp.j}-{bpb.bp1.i}-{bpb.bp1.j}-{bpb.bp2.i}-{bpb.bp2.j}')
-                
-    #             # self.model.addConstr(bp.var <= gp.quicksum(bpb.var for bpb in bp_branches), f'BPS-{bp.i}-{bp.j}')                
-    #         else:
-    #             self.model.addConstr(bp.var == 0)
-
     def add_branch_base_pairs_constraints(self) -> None:
         for bp in self.base_pairs:
             branch_pair = self.model.getVarByName(f'BP_{bp.i}_{bp.j}')            
@@ -312,7 +303,7 @@ class LILP:
 
     def add_cbranch_constraints(self) -> None:
         for cb in self.cbranches:
-            cb.create_auxiliary_constraints(self.model, self.branch_pairs)
+            # cb.create_auxiliary_constraints(self.model, self.branch_pairs)
             cb.create_closing_branch_ifthen_constraint(self.model)
         self.model.update()
 
@@ -341,8 +332,12 @@ class LILP:
         objective = gp.LinExpr([ml.energy for ml in self.multi_loops], [ml.var for ml in self.multi_loops])
         return objective
     
-    def create_branch_term(self) -> gp.LinExpr:
+    def create_branchpair_term(self) -> gp.LinExpr:
         objective = gp.LinExpr([bp.energy for bp in self.branch_pairs], [bp.var for bp in self.branch_pairs])
+        return objective
+    
+    def create_branch_term(self) -> gp.LinExpr:
+        objective = gp.LinExpr([bp.energy for bp in self.branches], [bp.var for bp in self.branches])
         return objective
     
     def create_cbranch_term(self) -> gp.LinExpr:
@@ -364,7 +359,8 @@ class LILP:
         #if multi:
            #objective.add(self.create_multi_term())
         if branch:
-            objective.add(self.create_branch_term())
+            # objective.add(self.create_branch_term())
+            objective.add(self.create_branchpair_term())
         if cbranch:
             objective.add(self.create_cbranch_term())
         self.model.setObjective(objective, GRB.MINIMIZE)

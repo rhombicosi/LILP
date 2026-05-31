@@ -37,13 +37,13 @@ class InternalLoop(Loop):
         mismatch2_nt2 = self.RNA[self.base_pairs[1].j]
 
         common_term = initiation_df.loc[self.size, "internal"] + asymmetry * abs(self.bp2.i - self.bp1.i - self.bp1.j + self.bp2.j) if self.is_valid_size() else M        
-        AU_closure_1 = self.bp1.nt1 + self.bp1.nt2 == 'AU' #or self.bp1.nt1 + self.bp1.nt2 == 'UA'
-        GU_closure_1 = self.bp1.nt1 + self.bp1.nt2 == 'GU' #or self.bp1.nt1 + self.bp1.nt2 == 'UG'
-        # AU_closure_2 = self.bp2.nt1 + self.bp2.nt2 == 'UA' # self.bp2.nt1 + self.bp2.nt2 == 'AU' or self.bp2.nt1 + self.bp2.nt2 == 'UA'  
-        # GU_closure_2 = self.bp2.nt1 + self.bp2.nt2 == 'UG' #self.bp2.nt1 + self.bp2.nt2 == 'GU' or self.bp2.nt1 + self.bp2.nt2 == 'UG'
+        AU_closure_1 = self.bp1.nt1 + self.bp1.nt2 == 'AU' or self.bp1.nt1 + self.bp1.nt2 == 'UA'
+        GU_closure_1 = self.bp1.nt1 + self.bp1.nt2 == 'GU' or self.bp1.nt1 + self.bp1.nt2 == 'UG'
+        AU_closure_2 = self.bp2.nt1 + self.bp2.nt2 == 'AU' or self.bp2.nt1 + self.bp2.nt2 == 'UA'  
+        GU_closure_2 = self.bp2.nt1 + self.bp2.nt2 == 'GU' or self.bp2.nt1 + self.bp2.nt2 == 'UG'
 
-        # double_penalty = (AU_closure_1 or GU_closure_1) and (AU_closure_2 or GU_closure_2)
-        penalty = (AU_closure_1 or GU_closure_1) #or (AU_closure_2 or GU_closure_2)
+        double_penalty = (AU_closure_1 or GU_closure_1) and (AU_closure_2 or GU_closure_2)
+        penalty = (AU_closure_1 or GU_closure_1) or (AU_closure_2 or GU_closure_2)
 
         if self.subtype == InternalType.INT11:
             G = int11_df[self.bp1.nt1 + self.bp1.nt2, mismatch1_nt1][self.bp2.nt1 + self.bp2.nt2, mismatch1_nt2]
@@ -52,34 +52,34 @@ class InternalLoop(Loop):
         elif self.subtype == InternalType.INT21:
             G = int12_df.loc[self.bp2.nt2 + self.bp2.nt1, mismatch2_nt2][mismatch1_nt1, self.bp1.nt2 + self.bp1.nt1, mismatch2_nt1]
         elif self.subtype == InternalType.INT1N:
-            if penalty:
-                G = common_term + AU_end_penalty
-            # if double_penalty:
-            #     G = common_term + 2*AU_end_penalty
-            # elif penalty:
+            # if penalty:
             #     G = common_term + AU_end_penalty
+            if double_penalty:
+                G = common_term + 2*AU_end_penalty
+            elif penalty:
+                G = common_term + AU_end_penalty
             else:
                 G = common_term 
         elif self.subtype == InternalType.INT22:
             G = int22_df.loc[self.bp1.nt1 + self.bp1.nt2, mismatch1_nt1 + mismatch1_nt2][self.bp2.nt1 + self.bp2.nt2, mismatch2_nt1 + mismatch2_nt2]
         elif self.subtype == InternalType.INT23 or self.subtype == InternalType.INT32:
             int23_term = common_term + int23_df.loc[self.bp1.nt1 + self.bp1.nt2][mismatch1_nt1 + mismatch1_nt2] + int23_df.loc[self.bp2.nt2 + self.bp2.nt1][mismatch2_nt2 + mismatch2_nt1]
-            if penalty:
-                G = common_term + AU_end_penalty
-            # if double_penalty:
-            #     G = int23_term + 2*AU_end_penalty
-            # elif penalty:
+            # if penalty:
             #     G = int23_term + AU_end_penalty
+            if double_penalty:
+                G = int23_term + 2*AU_end_penalty
+            elif penalty:
+                G = int23_term + AU_end_penalty
             else:
                 G = int23_term
         elif self.subtype == InternalType.INTGEN and self.is_valid_size():
             intgen_term = common_term + intnn_df.loc[self.bp1.nt1 + self.bp1.nt2][mismatch1_nt1 + mismatch1_nt2] + intnn_df.loc[self.bp2.nt1 + self.bp2.nt2][mismatch2_nt1 + mismatch2_nt2]
-            if penalty:
-                G = common_term + AU_end_penalty
-            # if double_penalty:
-            #     G = intgen_term + 2*AU_end_penalty
-            # elif penalty:
+            # if penalty:
             #     G = intgen_term + AU_end_penalty
+            if double_penalty:
+                G = intgen_term + 2*AU_end_penalty
+            elif penalty:
+                G = intgen_term + AU_end_penalty
             else:
                 G = intgen_term
         else:

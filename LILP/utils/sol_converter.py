@@ -139,7 +139,7 @@ def calculate_sol_energy(filepath, rna):
                     bp2 = BasePair(i2, j2, rna)
                     branch = InternalBranch((bp1, bp2), rna)
                     print(f'{element_type} :: ({i1}, {j1}), ({i2}, {j2}) :: {branch.energy}')
-                    energy += branch.energy
+                    # energy += branch.energy
                 
                 if element_type == 'BP':
                     i, j = indices

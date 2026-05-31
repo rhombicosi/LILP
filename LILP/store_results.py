@@ -29,8 +29,8 @@ add_column(results_df, 'MFE_vienna', vienna_MFEs)
 add_column(results_df, 'MFE_unafold', unafold_MFEs)
 print(results_df)
 
-n1 = 17
-n2 = 18 #len(seq_files)
+n1 = 89
+n2 = 90 #len(seq_files)
 
 for seq_no in range (n1, n2):
 
@@ -63,13 +63,13 @@ for seq_no in range (n1, n2):
     # f1_gen, fbeta_gen, MCC_gen, f1_rnastruct, fbeta_rnastruct, MCC_rnastruct, f1_vienna, fbeta_vienna, MCC_vienna, f1_unafold, fbeta_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, solstart_dir, start_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir, 0)
 
     ###### MAIN SOL OPTIMIZATION #######
-    model_name = 'lilp-branch'#'lilp-multi'#'lilp-nomulti'#'lilp-nobranch'   
+    model_name = 'lilp-cbranch' #'lilp-coaxial'#'lilp-multi'
     stem = True
     hairpin = True
     internal = True
     bulge = True
     branch = True
-    cbranch = False    
+    cbranch = True    
     # multi = False
     start = False 
 

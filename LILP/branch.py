@@ -1,5 +1,6 @@
 from basepair import *
 from lilp_config import *
+from tnn_parameters.internal_parameters import *
 
 class InternalBranch():
 
@@ -25,6 +26,21 @@ class InternalBranch():
         else:
             G = M
         return round(G)
+        # bp1 = self.bp1
+        # bp2 = self.bp2
+        # mismatch1_nt1 = self.RNA[self.base_pairs[0].i - 2]
+        # mismatch1_nt2 = self.RNA[self.base_pairs[0].j]
+        
+        # if self.is_valid_size():
+        #     if bp2.i - bp1.j == 1:
+        #         G = SCALE * B + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
+        #     elif bp2.i - bp1.j == 2:
+        #         G = SCALE * B + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
+        #     else:
+        #         G = SCALE * B
+        # else:
+        #     G = M
+        # return round(G)
     
     def _find_branches_with_pair(branches : List["InternalBranch"], pair: BasePair) -> List["InternalBranch"]:
         return [b for b in branches if (b.bp1.i == pair.i and b.bp1.j == pair.j) or (b.bp2.i == pair.i and b.bp2.j == pair.j)]
@@ -98,7 +114,7 @@ class BranchPair(BasePair):
         return self.i - self.j - 1
     
     def is_valid_size(self) -> bool:
-        return self.distance >= MAX_LOOP_SIZES[self.type]
+        return self.distance >= MIN_LOOP_SIZES[self.type]
     
     def calculate_energy(self) -> int:
         if self.is_valid_size():
@@ -142,7 +158,7 @@ class ClosingBranch():
         return bp1.j - bp2.j - 1
     
     def is_valid_size(self) -> bool:
-        return self.distance <= MAX_LOOP_SIZES[self.type]
+        return self.distance <= MAX_LOOP_SIZES[self.type] and self.bp1.j - self.bp1.i > MIN_LOOP_SIZES[self.type]
     
     def add_variable(self, model: gp.Model):
         bp1 = self.bp1
@@ -156,8 +172,27 @@ class ClosingBranch():
         return self.var
     
     def calculate_energy(self) -> int:
-        G = SCALE * (B + A)
+        if self.is_valid_size():
+            G = SCALE * A
+        else:
+            G = M
         return round(G)
+    
+        # bp1 = self.bp1
+        # bp2 = self.bp2
+        # mismatch1_nt1 = self.RNA[self.base_pairs[0].i]
+        # mismatch1_nt2 = self.RNA[self.base_pairs[0].j - 2]
+
+        # if self.is_valid_size():
+        #     if bp1.j - bp2.j == 1:
+        #         G = G = SCALE * A + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
+        #     elif bp1.j - bp2.j == 2:
+        #         G = G = SCALE * A + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
+        #     else:
+        #         G = SCALE * A
+        # else:
+        #     G = M
+        # return round(G)
     
     def create_branch_distance_constraint(self, model: gp.Model) -> None: 
         bp1 = self.bp1
@@ -181,13 +216,13 @@ class ClosingBranch():
         bp2 = self.bp2 
         inequality = gp.LinExpr(0)
 
-        aux = model.getVarByName(f'Y_{bp1.i}_{bp1.j}_{bp2.i}_{bp2.j}')
+        bpvar = model.getVarByName(f'BP_{bp2.i}_{bp2.j}')
 
         for u in range(bp2.j + 1, bp1.j):
             nucleotide = model.getVarByName(f'X_{u}')
             inequality.add(gp.LinExpr([1],[nucleotide]))
 
-        inequality.add(gp.LinExpr([1, 1, 1, -1],[bp1.var, bp2.var, aux, self.var]))
+        inequality.add(gp.LinExpr([1, 1, 1, -1],[bp1.var, bp2.var, bpvar, self.var]))
         model.addConstr(inequality <= self.distance + 2, f'CBIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
     # def create_closing_branch_ifthen_constraint(self, model: gp.Model) -> None:

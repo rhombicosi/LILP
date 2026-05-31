@@ -187,6 +187,7 @@ def ct2dot(ct_files, first_file, last_file, dot_bracket_dir):
 
         result = subprocess.run(['ct2dot', ct, '1', f'{dot_bracket_dir}/{ct_name_without_ext + ".txt"}'], capture_output=True, text=True)
         print(result.stdout)
+        print(result.stderr)
 
 # generate .ct with RNA structure
 def rnastruct_fold(seq_files, first_file, last_file, fold_dir):
