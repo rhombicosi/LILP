@@ -11,8 +11,8 @@ archive_path = (code_path/arch_rel_path).resolve()
 badfiles_dir = 'noctfiles'  
 
 # length for sequences to be tested
-len_start = 70
-len_end = 80
+len_start = 0
+len_end = 50
 
 # folders to save .seq and .ct files with sequences of seq_len
 seq_len_dir = f'RNA_seq_{len_start}_{len_end}'

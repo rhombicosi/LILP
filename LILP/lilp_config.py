@@ -20,8 +20,8 @@ Cbulge = -0.9
 # A = 8.4 # intitiation
 # B = -0.8 # branches
 # C = 0.0 # unpaired nucleotides
-A = 1.1#9.3#3.4#10.1 # intitiation
-B = 0.1#0.6#-0.6#0.4#-0.3 # branches
+A = 0.8#9.3#3.4#10.1 # intitiation
+B = 0.2#0.6#-0.6#0.4#-0.3 # branches
 C = -0.3 # unpaired nucleotides
 # Logarithmic
 # A = 10.1 # intitiation

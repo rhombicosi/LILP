@@ -29,8 +29,8 @@ add_column(results_df, 'MFE_vienna', vienna_MFEs)
 add_column(results_df, 'MFE_unafold', unafold_MFEs)
 print(results_df)
 
-n1 = 89
-n2 = 90 #len(seq_files)
+n1 = 0
+n2 = 1 #len(seq_files)
 
 for seq_no in range (n1, n2):
 
@@ -74,10 +74,10 @@ for seq_no in range (n1, n2):
     start = False 
 
     #### NO START VERSION ####
-    gen_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last)
+    gen_MFE, lp_name, opt_time, gap, best_obj_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last)
     #### WITH START VERSION ####
     # gen_MFE, lp_name, opt_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last, start, start_name, solstart_dir)
    
-    f1_gen, fbeta_gen, MCC_gen, f1_rnastruct, fbeta_rnastruct, MCC_rnastruct, f1_vienna, fbeta_vienna, MCC_vienna, f1_unafold, fbeta_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, sol_dir, model_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir, start)
+    PPV_gen, STY_gen, MCC_gen, PPV_rnastruct, STY_rnastruct, MCC_rnastruct, PPV_vienna, STY_vienna, MCC_vienna, PPV_unafold, STY_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, sol_dir, model_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir, start)
 
-    write_results_to_file(lp_name, len(rna), opt_time, gen_MFE/100, ref_MFEs[seq_no], rna_MFEs[seq_no], vienna_MFEs[seq_no], unafold_MFEs[seq_no], round(f1_gen,2), round(f1_rnastruct,2), round(f1_vienna,2), round(f1_unafold,2), round(fbeta_gen,2), round(fbeta_rnastruct,2), round(fbeta_vienna,2), round(fbeta_unafold,2), round(MCC_gen,2), round(MCC_rnastruct,2), round(MCC_vienna,2), round(MCC_unafold,2), results_dir, f'LILP_{len_start}_{len_end}_{model_name}.txt')
+    write_results_to_file(lp_name, len(rna), opt_time, best_obj_time, gap, gen_MFE/100, ref_MFEs[seq_no], rna_MFEs[seq_no], vienna_MFEs[seq_no], unafold_MFEs[seq_no], round(PPV_gen,2), round(PPV_rnastruct,2), round(PPV_vienna,2), round(PPV_unafold,2), round(STY_gen,2), round(STY_rnastruct,2), round(STY_vienna,2), round(STY_unafold,2), round(MCC_gen,2), round(MCC_rnastruct,2), round(MCC_vienna,2), round(MCC_unafold,2), results_dir, f'LILP_{len_start}_{len_end}_{model_name}.txt')

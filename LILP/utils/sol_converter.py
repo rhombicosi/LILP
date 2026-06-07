@@ -74,7 +74,7 @@ def compare2folds(generated, reference):
         STY = TP/(TP+FN)
         MCC = math.sqrt(PPV*STY)
 
-    return (f1,fbeta,MCC)
+    return (PPV,STY,MCC)
 
 def calculate_sol_energy(filepath, rna):
     energy = 0
@@ -224,25 +224,25 @@ def sol_analyse(seq_files, seq_number, sol_dir, model_name, dot_bracket_dir, dot
     print(viennaRNA)
     print(unafold)
 
-    (f1_lilp,fbeta_lilp,MCC_lilp) = compare2folds(generated, reference)
-    (f1_rnastruct,fbeta_rnastruct,MCC_rnastruct) = compare2folds(rnastruct, reference)
-    (f1_viennaRNA,fbeta_viennaRNA,MCC_viennaRNA) = compare2folds(viennaRNA, reference)
-    (f1_unafold,fbeta_unafold,MCC_unafold) = compare2folds(unafold, reference)
+    (PPV_lilp,STY_lilp,MCC_lilp) = compare2folds(generated, reference)
+    (PPV_rnastruct,STY_rnastruct,MCC_rnastruct) = compare2folds(rnastruct, reference)
+    (PPV_viennaRNA,STY_viennaRNA,MCC_viennaRNA) = compare2folds(viennaRNA, reference)
+    (PPV_unafold,STY_unafold,MCC_unafold) = compare2folds(unafold, reference)
 
-    print(f1_lilp)
-    print(fbeta_lilp)
+    print(PPV_lilp)
+    print(STY_lilp)
     print(MCC_lilp)
 
-    print(f1_rnastruct)
-    print(fbeta_rnastruct)
+    print(PPV_rnastruct)
+    print(STY_rnastruct)
     print(MCC_rnastruct)
     
-    print(f1_viennaRNA)
-    print(fbeta_viennaRNA)
+    print(PPV_viennaRNA)
+    print(STY_viennaRNA)
     print(MCC_viennaRNA)
     
-    print(f1_unafold)
-    print(fbeta_unafold)
+    print(PPV_unafold)
+    print(STY_unafold)
     print(MCC_unafold)
 
-    return f1_lilp, fbeta_lilp, MCC_lilp, f1_rnastruct, fbeta_rnastruct, MCC_rnastruct, f1_viennaRNA, fbeta_viennaRNA, MCC_viennaRNA, f1_unafold, fbeta_unafold, MCC_unafold
+    return PPV_lilp, STY_lilp, MCC_lilp, PPV_rnastruct, STY_rnastruct, MCC_rnastruct, PPV_viennaRNA, STY_viennaRNA, MCC_viennaRNA, PPV_unafold, STY_unafold, MCC_unafold

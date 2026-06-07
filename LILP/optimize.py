@@ -3,6 +3,19 @@ from utils.constants_paths import *
 from utils.prepro_run import *
 from lilp import *
 
+best_obj = float("inf")
+best_obj_time = None
+
+def mycallback(model, where):
+    global best_obj, best_obj_time
+
+    if where == GRB.Callback.MIPSOL:
+        obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
+
+        if obj < best_obj:  # minimization
+            best_obj = obj
+            best_obj_time = model.cbGet(GRB.Callback.RUNTIME)
+
 def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, cbranch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None) -> None:
     
     model_start_time = time.time()
@@ -61,16 +74,18 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
         rna_model.model.update()
 
     opt_start_time = time.time()
-    rna_model.model.optimize()
+    rna_model.model.optimize(mycallback)
     opt_time = time.time() - opt_start_time
     print(f'OPTIMIZATION TIME :: {opt_time}')
 
     rna_model.model.write(f'{sol_dir}/{lp_file_name}-{model_name}.sol')
 
+    print(f'Last incumbent time: {best_obj_time}')
+    print(f'Gap: {rna_model.model.MIPGap}')
     print(f'Obj: {rna_model.model.ObjVal:g}')
 
     if rna_model.model.ObjVal is not None:
-        return rna_model.model.ObjVal, lp_file_name, opt_time
+        return rna_model.model.ObjVal, lp_file_name, opt_time, rna_model.model.MIPGap, best_obj_time
     else:
         print("Object value was not assigned due to an error.")
 
