@@ -35,7 +35,7 @@ install RNAstructure from tarball
 add the path
 
 `echo 'export PATH=$HOME/path/to/RNAstructure/exe:$PATH' >> ~/.bashrc`
-`echo 'export DATAPATH=$HOME/path/to/RNAstructure/data_tables:$PATH' >> ~/.bashrc`
+`echo 'export DATAPATH=$HOME/path/to/RNAstructure/data_tables' >> ~/.profile`
 
 ### ViennaRNA (RNAfold)
 

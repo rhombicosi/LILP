@@ -3,18 +3,21 @@ from utils.constants_paths import *
 from utils.prepro_run import *
 from lilp import *
 
-best_obj = float("inf")
-best_obj_time = None
+def make_callback():
+    best_obj = float("inf")
+    best_obj_time = None
 
-def mycallback(model, where):
-    global best_obj, best_obj_time
+    def callback(model, where):
+        nonlocal best_obj, best_obj_time
 
-    if where == GRB.Callback.MIPSOL:
-        obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
+        if where == GRB.Callback.MIPSOL:
+            obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
 
-        if obj < best_obj:  # minimization
-            best_obj = obj
-            best_obj_time = model.cbGet(GRB.Callback.RUNTIME)
+            if obj < best_obj:
+                best_obj = obj
+                best_obj_time = model.cbGet(GRB.Callback.RUNTIME)
+
+    return callback, lambda: (best_obj, best_obj_time)
 
 def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, cbranch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None) -> None:
     
@@ -74,7 +77,9 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
         rna_model.model.update()
 
     opt_start_time = time.time()
-    rna_model.model.optimize(mycallback)
+    callback, get_results = make_callback()
+    rna_model.model.optimize(callback)
+    best_obj, best_obj_time = get_results()
     opt_time = time.time() - opt_start_time
     print(f'OPTIMIZATION TIME :: {opt_time}')
 
