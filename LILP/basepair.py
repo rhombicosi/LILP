@@ -51,10 +51,10 @@ class BasePair:
         if matches:
             for bp in matches:
                 inequality.add(gp.LinExpr([1.0], [bp.var]))
-            model.addConstr(inequality <= 1, f'SP-{i}')
+            model.addConstr(inequality <= 1, f'SP_{i}')
 
     def create_no_crossing_constraint(model: gp.Model, bp1: "BasePair", bp2: "BasePair") -> None:        
         if bp2.i > bp1.i and bp2.i < bp1.j and bp2.j > bp1.j:
             inequality = gp.LinExpr(0)
             inequality.add(gp.LinExpr([1.0, 1.0],[bp1.var, bp2. var]))
-            model.addConstr(inequality <= 1, f'NC-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+            model.addConstr(inequality <= 1, f'NC_{bp1.i}_{bp1.j}_{bp2.i}_{bp2.j}')

@@ -33,7 +33,7 @@ class HairpinLoop(Loop):
     def create_hairpin_size_constraint(self, model: gp.Model) -> None:
         if not self.is_valid_size():
             inequality = gp.LinExpr([1], [self.var])
-            model.addConstr(inequality == 0, f'HS-{self.base_pairs[0].i}-{self.base_pairs[0].j}')
+            model.addConstr(inequality == 0, f'HS_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
             
     def create_hairpin_ifthen_constraint(self, model: gp.Model) -> None:
         inequality = gp.LinExpr(0)
@@ -43,7 +43,7 @@ class HairpinLoop(Loop):
             inequality.add(gp.LinExpr([1], [nucleotide]))
         
         inequality.add(gp.LinExpr([1, -1],[self.base_pairs[0].var, self.var]))            
-        model.addConstr(inequality <= self.size, f'HIT-{self.base_pairs[0].i}-{self.base_pairs[0].j}')
+        model.addConstr(inequality <= self.size, f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
 
     def create_hairpin_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:        
         for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
@@ -54,7 +54,7 @@ class HairpinLoop(Loop):
                 inequality.add(gp.LinExpr([1], [bp.var]))
             
             inequality.add(gp.LinExpr([-1], [self.base_pairs[0].var]))
-            model.addConstr(inequality <= 1, f'HOI-{self.base_pairs[0].i}-{self.base_pairs[0].j}-{u}')
+            model.addConstr(inequality <= 1, f'HOI_{self.base_pairs[0].i}_{self.base_pairs[0].j}_{u}')
 
     def create_hairpin_max_number_constraint(model: gp.Model, hairpin_loops: List["HairpinLoop"]) -> None:
         inequality = gp.LinExpr(0)

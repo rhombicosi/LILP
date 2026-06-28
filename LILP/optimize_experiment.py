@@ -5,7 +5,7 @@ from lilp import *
 from utils.sol_converter import *
 
 #len_start = 60
-seq_number = 89
+seq_number = 2
 
 # cwd = Path.cwd()
 # code_path = Path(__file__).parent.parent
@@ -17,7 +17,8 @@ seq_number = 89
 # seq_files = get_filenames(chain_dir, '.seq')
 
 chain_file = seq_files[seq_number]
-chain_name_with_ext = os.path.basename(chain_file)        
+chain_name_with_ext = os.path.basename(chain_file)   
+print(chain_name_with_ext)     
 chain_name_without_ext = os.path.splitext(chain_name_with_ext)[0]
 lp_file_name = chain_name_without_ext
 seq_data = parse_seq_file(chain_file)
@@ -28,9 +29,9 @@ print(rna)
 # bp1 = BasePair(3,54,rna)
 # bp2 = BasePair(12,53,rna)
 
-model_name = 'lilp-cbranch'
+model_name = 'lilp-branch'
 start_name = 'lilp-branch-init'
-for f in range(8):
+for f in range(21):
     filepath = f'{incumbent_dir}/{lp_file_name}-incumbent-{model_name}_{f}.sol'
     fold, pairs = pairs2brackets(filepath, rna)
     print(fold)

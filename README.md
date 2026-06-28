@@ -39,33 +39,33 @@ add the path
 
 ### ViennaRNA (RNAfold)
 
-sudo apt update
+`sudo apt update`
 
-sudo apt install -y build-essential libgsl-dev python3-dev swig python3-pip pkg-config
+`sudo apt install -y build-essential libgsl-dev python3-dev swig python3-pip pkg-config`
 
-wget https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_7_x/ViennaRNA-2.7.2.tar.gz
+`wget https://www.tbi.univie.ac.at/RNA/download/sourcecode/2_7_x/ViennaRNA-2.7.2.tar.gz`
 
-tar -xvzf ViennaRNA-2.7.2.tar.gz
+`tar -xvzf ViennaRNA-2.7.2.tar.gz`
 
-cd ViennaRNA-2.7.2
+`cd ViennaRNA-2.7.2`
 
-./configure --prefix=$HOME/path/to/ViennaRNA
+`./configure --prefix=$HOME/path/to/ViennaRNA`
 
-make
+`make`
 
-make check
+`make check`
 
-make install
+`make install`
 
-echo 'export PATH="$HOME/path/to/ViennaRNA/bin:$PATH"' >> ~/.bashrc
+`echo 'export PATH="$HOME/path/to/ViennaRNA/bin:$PATH"' >> ~/.bashrc`
 
-echo 'export LD_LIBRARY_PATH="$HOME/path/to/ViennaRNA/lib:$LD_LIBRARY_PATH"' >> ~/.bashrc
+`echo 'export LD_LIBRARY_PATH="$HOME/path/to/ViennaRNA/lib:$LD_LIBRARY_PATH"' >> ~/.bashrc`
 
 ### UNAfold
 
-install unafold from tarball
+`install unafold from tarball`
 
-export PATH="$HOME/path/to/unafold/bin:$PATH"
+`export PATH="$HOME/path/to/unafold/bin:$PATH"`
 
 ## CODE RUN
 1. In constants_paths.py set the range of lengths of the sequences to test. for example:

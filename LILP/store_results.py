@@ -63,13 +63,13 @@ for seq_no in range (n1, n2):
     # f1_gen, fbeta_gen, MCC_gen, f1_rnastruct, fbeta_rnastruct, MCC_rnastruct, f1_vienna, fbeta_vienna, MCC_vienna, f1_unafold, fbeta_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, solstart_dir, start_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir, 0)
 
     ###### MAIN SOL OPTIMIZATION #######
-    model_name = 'lilp-cbranch' #'lilp-coaxial'#'lilp-multi'
+    model_name = 'lilp-branch'#'lilp-hairpin' #'lilp-coaxial'
     stem = True
     hairpin = True
     internal = True
     bulge = True
     branch = True
-    cbranch = True    
+    cbranch = False    
     # multi = False
     start = False 
 

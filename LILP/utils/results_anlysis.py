@@ -9,7 +9,7 @@ model= 'lilp-branch'
 # results_nomulti_file = f'{results_folder_name}/LILP_70_80_{model1}.txt'
 # results_multi_file = f'{results_folder_name}/LILP_70_80_{model2}.txt'
 
-results_branch_file = f'{results_folder_name}/LILP_70_80_{model}.txt'
+results_branch_file = f'{results_folder_name}/LILP_80_90_{model}.txt'
 # results_multi_file = f'{results_folder_name}/LILP_0_50_{model_name}.txt'
 # f'{results_folder_name}/LILP_{len_start}_{len_end}_{model_name}.txt'
 # df_nomulti = pd.read_csv(f'{results_nomulti_file}', sep=r"\s+")

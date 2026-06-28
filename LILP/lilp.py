@@ -166,7 +166,7 @@ class LILP:
                 
                 nucleotide = self.model.getVarByName(f'X_{i}')
                 inequality.add(gp.LinExpr([1.0], [nucleotide]))
-                self.model.addConstr(inequality == 1, f'UN-{i}')
+                self.model.addConstr(inequality == 1, f'UN_{i}')
         self.model.update()
     
     def add_single_pair_constraints(self, first, last) -> None:
