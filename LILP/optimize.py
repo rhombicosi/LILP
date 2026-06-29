@@ -60,7 +60,7 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.setParam('CoverCuts', 2)    # knapsack cover aggressiveness
     # rna_model.model.setParam('MIRCuts', 2)      # MIR cut aggressiveness
     # rna_model.model.setParam('CliqueCuts', 2)   # clique cut aggressiveness
-    rna_model.model.setParam("TimeLimit", 2400)
+    rna_model.model.setParam("TimeLimit", 5400)
     rna_model.model.setParam("MIPGap", 0.002)
     rna_model.model.setParam("Threads", 24)
     rna_model.model.setParam("NodefileStart", 0.5)  # start disk swapping earlier

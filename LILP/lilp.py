@@ -385,7 +385,7 @@ class LILP:
         #if multi:
             #self.create_multi_loops()
 
-        print(f"PAIRS: {len(self.base_pairs)}, NUCLEOTIDES: {len(self.nucleotides)}, HAIRPIN: {len(self.hairpin_loops)}, STEMPS: {len(self.stem_loops)}, BRANCHES: {len(self.branches)}, INTERNALS: {len(self.internal_loops)}, BULGES: {len(self.bulge_loops)}, BRANCH PAIRS: {len(self.branch_pairs)}, CLOSING_BRANCHES: {len(self.cbranches)}")    
+        print(f"PAIRS: {len(self.base_pairs)}, NUCLEOTIDES: {len(self.nucleotides)}, HAIRPIN: {len(self.hairpin_loops)}, STEMS: {len(self.stem_loops)}, BRANCHES: {len(self.branches)}, INTERNALS: {len(self.internal_loops)}, BULGES: {len(self.bulge_loops)}, BRANCH PAIRS: {len(self.branch_pairs)}, CLOSING_BRANCHES: {len(self.cbranches)}")    
     
     def create_constraints(self, stem, hairpin, internal, bulge, branch, cbranch, first, last):
         self.add_single_pair_constraints(first, last)

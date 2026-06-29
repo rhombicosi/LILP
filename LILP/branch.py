@@ -48,8 +48,9 @@ class InternalBranch():
     def _find_branches_end_pair(branches : List["InternalBranch"], pair: BasePair) -> List["InternalBranch"]:
         return [b for b in branches if (b.bp2.i == pair.i and b.bp2.j == pair.j)]
 
-    def create_branch_distance_constraint(self, model: gp.Model) -> None:        
-        if self.distance > MAX_LOOP_SIZES[self.type]:
+    def create_branch_distance_constraint(self, model: gp.Model) -> None:
+        n = len(self.RNA)      
+        if self.distance > MAX_LOOP_SIZES[self.type] and self.bp1.i > BRANCH_START and self.bp2.j < n - BRANCH_START:
             inequality = gp.LinExpr([1], [self.var])
             model.addConstr(inequality == 0, f'BD-{self.base_pairs[0].i}-{self.base_pairs[0].j}-{self.base_pairs[1].i}-{self.base_pairs[1].j}')
 
@@ -114,7 +115,8 @@ class BranchPair(BasePair):
         return self.i - self.j - 1
     
     def is_valid_size(self) -> bool:
-        return self.distance >= MIN_LOOP_SIZES[self.type]
+        n = len(self.rna)
+        return self.distance >= MIN_LOOP_SIZES[self.type] and self.i > BRANCH_START and self.j < n - BRANCH_START
     
     def calculate_energy(self) -> int:
         if self.is_valid_size():
@@ -158,7 +160,8 @@ class ClosingBranch():
         return bp1.j - bp2.j - 1
     
     def is_valid_size(self) -> bool:
-        return self.distance <= MAX_LOOP_SIZES[self.type] and self.bp1.j - self.bp1.i > MIN_LOOP_SIZES[self.type]
+        n = len(self.RNA)
+        return self.distance <= MAX_LOOP_SIZES[self.type] and self.bp1.j - self.bp1.i > MIN_LOOP_SIZES[self.type] and self.bp1.i > BRANCH_START and self.bp1.j < n - BRANCH_START
     
     def add_variable(self, model: gp.Model):
         bp1 = self.bp1
@@ -201,15 +204,15 @@ class ClosingBranch():
             inequality = gp.LinExpr([1], [self.var])
             model.addConstr(inequality == 0, f'CBD-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
-    def create_auxiliary_constraints(self, model: gp.Model, branch_pairs: List["BranchPair"] ) -> None:
-        bp1 = self.bp1
-        bp2 = self.bp2 
+    # def create_auxiliary_constraints(self, model: gp.Model, branch_pairs: List["BranchPair"] ) -> None:
+    #     bp1 = self.bp1
+    #     bp2 = self.bp2 
         
-        aux = model.getVarByName(f'Y_{bp1.i}_{bp1.j}_{bp2.i}_{bp2.j}')
-        matches = BranchPair._find_branchpairs_in_subsequence(branch_pairs, bp1.i, bp2.i)
-        if matches:
-            for m in matches:
-                model.addConstr(aux >= m.var, f'AUX-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}-{m.i}-{m.j}')
+    #     aux = model.getVarByName(f'Y_{bp1.i}_{bp1.j}_{bp2.i}_{bp2.j}')
+    #     matches = BranchPair._find_branchpairs_in_subsequence(branch_pairs, bp1.i, bp2.i)
+    #     if matches:
+    #         for m in matches:
+    #             model.addConstr(aux >= m.var, f'AUX-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}-{m.i}-{m.j}')
     
     def create_closing_branch_ifthen_constraint(self, model: gp.Model) -> None:
         bp1 = self.bp1

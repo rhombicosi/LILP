@@ -8,8 +8,10 @@ MULTI_BOUND = 5
 MFE = -1000
 SCALE = 100
 M = 10000
-BRANCH_D = 6
-CBRANCH_D = 12
+
+BRANCH_START = 6 #FOR 80-90nts
+# BRANCH_D = 6
+# CBRANCH_D = 12
 
 # R = 1.9872036 × 10-3	kcal.K-1.mol-1 is the gas constant and T is the absolute temperature, 310.15 K
 RT = 0.616
@@ -20,8 +22,8 @@ Cbulge = -0.9
 # A = 8.4 # intitiation
 # B = -0.8 # branches
 # C = 0.0 # unpaired nucleotides
-A = 0.8#9.3#3.4#10.1 # intitiation
-B = 0.2#0.6#-0.6#0.4#-0.3 # branches
+A = 2.0#9.3#3.4#10.1 # intitiation
+B = 0.4#0.6#-0.6#0.4#-0.3 # branches
 C = -0.3 # unpaired nucleotides
 # Logarithmic
 # A = 10.1 # intitiation
@@ -59,9 +61,9 @@ MAX_LOOP_SIZES = {
         LoopType.INTERNAL: 12,
         LoopType.BULGE: 5,
         LoopType.MULTI: 8,
-        LoopType.BRANCH: 8,
+        LoopType.BRANCH: 14,
         LoopType.BRANCHPAIR: 7,
-        LoopType.CBRANCH: 8
+        LoopType.CBRANCH: 5
     }
 
 MIN_LOOP_SIZES = {
