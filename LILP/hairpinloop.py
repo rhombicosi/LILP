@@ -21,8 +21,8 @@ class HairpinLoop(Loop):
             if self.base_pairs[0].nt1 + self.base_pairs[0].nt2 == 'GU' and self.RNA[self.base_pairs[0].i - 3] + self.RNA[self.base_pairs[0].j - 2] == 'GG':
                 G += spec_GU_clos
             
-            if self.mistmatch_nt1 + self.mistmatch_nt2 == 'GA' or self.mistmatch_nt1 + self.mistmatch_nt2 == 'UU':
-                G += hp_mismatch['GA']
+            # if self.mistmatch_nt1 + self.mistmatch_nt2 == 'GA' or self.mistmatch_nt1 + self.mistmatch_nt2 == 'UU':
+            #     G += hp_mismatch['GA']
 
             if self.mistmatch_nt1 + self.mistmatch_nt2 == 'GG':
                 G += hp_mismatch['GG']
@@ -55,6 +55,18 @@ class HairpinLoop(Loop):
             
             inequality.add(gp.LinExpr([-1], [self.base_pairs[0].var]))
             model.addConstr(inequality <= 1, f'HOI_{self.base_pairs[0].i}_{self.base_pairs[0].j}_{u}')
+
+    # def create_hairpin_onlyif_constraint(self, model: gp.Model) -> None:        
+    #     for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
+    #         inequality = gp.LinExpr([2], [self.var])
+            
+    #         for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
+    #             nucleotide = model.getVarByName(f'X_{u}')
+    #             inequality.add(gp.LinExpr([-1], [nucleotide]))
+            
+    #         inequality.add(gp.LinExpr([-1], [self.base_pairs[0].var]))
+    #         model.addConstr(inequality <= 1 - self.size, f'HOI_{self.base_pairs[0].i}_{self.base_pairs[0].j}_{u}')
+
 
     def create_hairpin_max_number_constraint(model: gp.Model, hairpin_loops: List["HairpinLoop"]) -> None:
         inequality = gp.LinExpr(0)

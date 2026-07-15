@@ -5,11 +5,12 @@ MIN_D = 3
 MULTI_SIZE = 15
 MULTI_MIN_D = 7
 MULTI_BOUND = 5
-MFE = -1000
+MFE = -2200
 SCALE = 100
 M = 10000
-
-BRANCH_START = 6 #FOR 80-90nts
+LARGE = 70
+BRANCH_LIMIT = 40
+BRANCH_START = 4# 4 for 50-60nts #6 FOR 80-90nts
 # BRANCH_D = 6
 # CBRANCH_D = 12
 
@@ -22,8 +23,8 @@ Cbulge = -0.9
 # A = 8.4 # intitiation
 # B = -0.8 # branches
 # C = 0.0 # unpaired nucleotides
-A = 2.0#9.3#3.4#10.1 # intitiation
-B = 0.4#0.6#-0.6#0.4#-0.3 # branches
+A = 9.3#3.4#1.0#9.3#3.4#10.1 # intitiation
+B = 1.375#2.5 #2.1125#1.375#-0.6#0.4#1.2#0.6#0.6#-0.6#0.4#-0.3 # branches
 C = -0.3 # unpaired nucleotides
 # Logarithmic
 # A = 10.1 # intitiation
@@ -57,13 +58,13 @@ class InternalType(Enum):
     INTGEN = "general"
 
 MAX_LOOP_SIZES = {
-        LoopType.HAIRPIN: 10,
-        LoopType.INTERNAL: 12,
-        LoopType.BULGE: 5,
+        LoopType.HAIRPIN: 12,
+        LoopType.INTERNAL: 10,
+        LoopType.BULGE: 6,
         LoopType.MULTI: 8,
         LoopType.BRANCH: 14,
         LoopType.BRANCHPAIR: 7,
-        LoopType.CBRANCH: 5
+        LoopType.CBRANCH: 9
     }
 
 MIN_LOOP_SIZES = {

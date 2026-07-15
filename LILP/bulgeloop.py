@@ -15,14 +15,14 @@ class BulgeLoop(Loop):
             if bp2.i == bp1.i + 1:
                 if self.size == 1:
                     G = initiation_df.loc[self.size, "bulge"] + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + Cbulge*(self.RNA[bp2.j + 1] == "C" and (bp2.nt2 == "C" or bp1.nt1 == "C")) - RT*np.log(3)
-                elif self.size < 1 and self.size <= 6:
+                elif self.size > 1 and self.size <= 6:
                     G = initiation_df.loc[self.size, "bulge"]
                 else:
                     G = initiation_df.loc[self.size, "bulge"] + 1.75*RT*np.log(self.size/6)
             elif bp1.j == bp2.j + 1:
                 if self.size == 1:
                     G = initiation_df.loc[self.size, "bulge"] + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + Cbulge*(self.RNA[bp2.i + 1] == "C" and (bp1.nt1 == "C" or bp2.nt1 == "C")) - RT*np.log(3)
-                elif self.size < 1 and self.size <= 6:
+                elif self.size > 1 and self.size <= 6:
                     G = initiation_df.loc[self.size, "bulge"]
                 else:
                     G = initiation_df.loc[self.size, "bulge"] + 1.75*RT*np.log(self.size/6)

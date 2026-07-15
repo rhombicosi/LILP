@@ -46,7 +46,7 @@ class InternalLoop(Loop):
         penalty = (AU_closure_1 or GU_closure_1) or (AU_closure_2 or GU_closure_2)
 
         if self.subtype == InternalType.INT11:
-            G = int11_df[self.bp1.nt1 + self.bp1.nt2, mismatch1_nt1][self.bp2.nt1 + self.bp2.nt2, mismatch1_nt2]
+            G = int11_df.loc[self.bp1.nt1 + self.bp1.nt2, mismatch1_nt1][self.bp2.nt1 + self.bp2.nt2, mismatch1_nt2]
         elif self.subtype == InternalType.INT12:
             G = int12_df.loc[self.bp1.nt1 + self.bp1.nt2, mismatch1_nt1][mismatch2_nt2, self.bp2.nt1 + self.bp2.nt2, mismatch1_nt2]
         elif self.subtype == InternalType.INT21:
@@ -135,6 +135,25 @@ class InternalLoop(Loop):
 
             inequality.add(gp.LinExpr([-1, -1], [bp1.var, bp2.var]))
             model.addConstr(inequality <= 1, f'IOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}-{u}')
+
+    # def create_internal_onlyif_constraint(self, model: gp.Model) -> None:
+    #     bp1 = self.base_pairs[0]
+    #     bp2 = self.base_pairs[1]
+
+    #     inequality = gp.LinExpr(0)
+    #     inequality.add(gp.LinExpr([3], [self.var]))
+
+    #     for u in range(bp1.i + 1, bp2.i):
+    #         nucleotide = model.getVarByName(f'X_{u}')
+    #         inequality.add(gp.LinExpr([-1],[nucleotide]))
+
+    #     for u in range(bp2.j + 1, bp1.j):
+    #         nucleotide = model.getVarByName(f'X_{u}')
+    #         inequality.add(gp.LinExpr([-1],[nucleotide]))
+
+        
+    #     inequality.add(gp.LinExpr([-1, -1],[bp1.var, bp2.var]))
+    #     model.addConstr(inequality <= 1 - self.size, f'IOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')        
 
     def create_internal_max_number_constraint(model: gp.Model, internal_loops: List["InternalLoop"]) -> None:
         inequality = gp.LinExpr(0)

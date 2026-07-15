@@ -26,6 +26,8 @@ class InternalBranch():
         else:
             G = M
         return round(G)
+
+        # coaxial stacking
         # bp1 = self.bp1
         # bp2 = self.bp2
         # mismatch1_nt1 = self.RNA[self.base_pairs[0].i - 2]
@@ -33,9 +35,9 @@ class InternalBranch():
         
         # if self.is_valid_size():
         #     if bp2.i - bp1.j == 1:
-        #         G = SCALE * B + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
+        #         G = wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
         #     elif bp2.i - bp1.j == 2:
-        #         G = SCALE * B + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
+        #         G = wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
         #     else:
         #         G = SCALE * B
         # else:
@@ -110,9 +112,6 @@ class BranchPair(BasePair):
         super().__init__(i, j, RNA)
         self.type = LoopType.BRANCHPAIR   
         self.energy = self.calculate_energy()
-
-    def compute_distance(self):
-        return self.i - self.j - 1
     
     def is_valid_size(self) -> bool:
         n = len(self.rna)
@@ -124,6 +123,11 @@ class BranchPair(BasePair):
         else:
             G = M
         return round(G)
+    
+    def create_branchpair_distance_constraint(self, model: gp.Model) -> None:
+        if not self.is_valid_size():
+            inequality = gp.LinExpr([1], [self.var])
+            model.addConstr(inequality == 0, f'BPD-{self.i}-{self.j}')
     
     def _find_branchpairs_in_subsequence(branchpairs: List["BranchPair"], i: int, j: int) -> List["BranchPair"]:
         return [brp for brp in branchpairs if (brp.i > i and brp.j < j)]
@@ -176,11 +180,12 @@ class ClosingBranch():
     
     def calculate_energy(self) -> int:
         if self.is_valid_size():
-            G = SCALE * A
+            G = SCALE * (A + B)
         else:
             G = M
         return round(G)
-    
+        
+        # coaxial stacking
         # bp1 = self.bp1
         # bp2 = self.bp2
         # mismatch1_nt1 = self.RNA[self.base_pairs[0].i]
@@ -188,11 +193,11 @@ class ClosingBranch():
 
         # if self.is_valid_size():
         #     if bp1.j - bp2.j == 1:
-        #         G = G = SCALE * A + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
+        #         G = SCALE * (A + B) + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
         #     elif bp1.j - bp2.j == 2:
-        #         G = G = SCALE * A + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
+        #         G = SCALE * (A + B) + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
         #     else:
-        #         G = SCALE * A
+        #         G = SCALE * (A + B)
         # else:
         #     G = M
         # return round(G)
@@ -228,21 +233,29 @@ class ClosingBranch():
         inequality.add(gp.LinExpr([1, 1, 1, -1],[bp1.var, bp2.var, bpvar, self.var]))
         model.addConstr(inequality <= self.distance + 2, f'CBIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
-    # def create_closing_branch_ifthen_constraint(self, model: gp.Model) -> None:
-    #     bp1 = self.bp1
-    #     bp2 = self.bp2 
-    #     inequality = gp.LinExpr(0)
+    def create_closing_branch_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
+        bp1 = self.bp1
+        bp2 = self.bp2
+        bpvar = model.getVarByName(f'BP_{bp2.i}_{bp2.j}')
 
-    #     bp = model.getVarByName(f'BP_{bp2.i}_{bp2.j}')
+        if self.distance > 0:
+            for u in range(bp2.j + 1, bp1.j):
+                inequality = gp.LinExpr(0)
+                inequality.add(gp.LinExpr([4], [self.var]))
 
-    #     for u in range(bp2.j + 1, bp1.j):
-    #         nucleotide = model.getVarByName(f'X_{u}')
-    #         inequality.add(gp.LinExpr([1],[nucleotide]))
-
-    #     inequality.add(gp.LinExpr([1, 1, 1, -1],[bp1.var, bp2.var, bp, self.var]))
-    #     model.addConstr(inequality <= self.distance + 2, f'CBIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
-
-    
+                matches = BasePair._find_base_pairs_with_index(base_pairs, u)
+                
+                if matches:
+                    for bp in matches:
+                        inequality.add(gp.LinExpr([1], [bp.var]))                
+                    
+                inequality.add(gp.LinExpr([-1, -1, -1],[bp1.var, bp2.var, bpvar]))
+                model.addConstr(inequality <= 1, f'CBOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}-{u}') 
+        else:
+            inequality = gp.LinExpr(0)
+            inequality.add(gp.LinExpr([4], [self.var]))
+            inequality.add(gp.LinExpr([-1, -1, -1],[bp1.var, bp2.var, bpvar]))
+            model.addConstr(inequality <= 1, f'CBOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')    
 
 # class ClosingBranch():
 #     def __init__(self, base_pair: BasePair, i: int, j: int, RNA: str):

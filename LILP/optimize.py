@@ -2,6 +2,7 @@ import time
 from utils.constants_paths import *
 from utils.prepro_run import *
 from lilp import *
+from start_solution import *
 
 def make_callback():
     best_obj = float("inf")
@@ -36,7 +37,7 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_45') == 1)
     # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_46') == 1)
     # rna_model.model.addConstr(rna_model.model.getVarByName(f'Y_7_47_24_40') == 1)      
-    # rna_model.model.addConstr(rna_model.model.getVarByName(f'CBRANCH_7_47_24_40') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'HAIRPIN_13_19') == 1)
 
     model_time = time.time() - model_start_time
     print(f'MODEL CONSTRUCTION TIME :: {model_time}')
@@ -60,21 +61,46 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.setParam('CoverCuts', 2)    # knapsack cover aggressiveness
     # rna_model.model.setParam('MIRCuts', 2)      # MIR cut aggressiveness
     # rna_model.model.setParam('CliqueCuts', 2)   # clique cut aggressiveness
-    rna_model.model.setParam("TimeLimit", 5400)
+    rna_model.model.setParam("TimeLimit", 2400)
     rna_model.model.setParam("MIPGap", 0.002)
-    rna_model.model.setParam("Threads", 24)
-    rna_model.model.setParam("NodefileStart", 0.5)  # start disk swapping earlier
+    rna_model.model.setParam("Threads", 8)
+    # rna_model.model.setParam("Threads", 8)
+    rna_model.model.setParam("NodefileStart", 0.3)  # start disk swapping earlier
     
+    # if start:
+    #     rna_model.model.NumStart = 1
+    #     rna_model.model.update()
+    #     solvars = read_sol(f'{solstart_dir}/{lp_file_name}-{start_name}.sol')
+
+    #     # start values
+    #     for v in rna_model.model.getVars(): 
+    #         if v.VarName in solvars.keys():
+    #             v.Start = round(int(solvars[v.VarName]), 1)
+    #     rna_model.model.update()
     if start:
         rna_model.model.NumStart = 1
         rna_model.model.update()
-        solvars = read_sol(f'{solstart_dir}/{lp_file_name}-{start_name}.sol')
+        
+        dotbracket_file = f'{dot_bracket_start_dir}/{lp_file_name}-dotbrackets-{start_name}.txt'
+        sol_start = f'{solstart_dir}/{lp_file_name}-{model_name}-start.sol'
+        generate_start_sol(dotbracket_file, sol_start)
+        solvars = read_sol(sol_start)
 
         # start values
         for v in rna_model.model.getVars(): 
             if v.VarName in solvars.keys():
                 v.Start = round(int(solvars[v.VarName]), 1)
         rna_model.model.update()
+
+    # for v in rna_model.model.getVars():
+    #     if v.VarName.startswith("HAIRPIN"):
+    #         v.BranchPriority = 10
+    #     elif v.VarName.startswith("STEM"):
+    #         v.BranchPriority = 10
+    #     elif v.VarName.startswith("BRANCH"):
+    #         v.BranchPriority = 5
+    #     else:
+    #         v.BranchPriority = 0
 
     opt_start_time = time.time()
     callback, get_results = make_callback()

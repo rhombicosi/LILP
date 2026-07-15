@@ -108,9 +108,11 @@ class LILP:
         self.model.update()
 
     def create_branches(self) -> None:
+        n = len(self.rna_seq)
         for bp1 in self.base_pairs:
             for bp2 in self.base_pairs:
                 if bp2.i > bp1.j:
+                    # if bp1.j - bp1.i <= n/2 and bp2.j - bp2.i <= n/2:
                     branch = InternalBranch([bp1, bp2], self.rna_seq)
                     branch.add_variable(self.model)
                     self.branches.append(branch)
@@ -123,28 +125,14 @@ class LILP:
             self.branch_pairs.append(branch_pair)
         self.model.update()
 
-    # def create_closing_branches(self):
-    #     for bp in self.base_pairs:
-    #         for i in range(bp.i+1,bp.j):
-    #             for j in range(i + MIN_D + 1, bp.j):            
-    #                 if i > bp.i and j > i and j < bp.j:                        
-    #                     closing_branch = ClosingBranch(bp, i, j, self.rna_seq)
-    #                     closing_branch.add_variable(self.model)
-    #                     self.closing_branches.append(closing_branch)
-    #     self.model.update()
-
     def create_closing_branches(self) -> None:
         for bp1 in self.base_pairs:
             for bp2 in self.base_pairs:
                 if bp1.i < bp2.i and bp2.j < bp1.j and (bp2.i - bp1.i - 1 >= MIN_D + 2):
                     branch = ClosingBranch([bp1, bp2], self.rna_seq)
                     branch.add_variable(self.model)
-                    self.cbranches.append(branch)                    
-
-                    # aux = self.model.addVar(vtype=GRB.BINARY, name=f'Y_{bp1.i}_{bp1.j}_{bp2.i}_{bp2.j}')  
-                    # self.auxiliary.append(aux) 
+                    self.cbranches.append(branch)
         self.model.update()
-
 
     def create_multiloop(self) -> None:
         bp1 = BasePair._find_base_pair_with_indices(self.base_pairs,5,49)[0]
@@ -154,6 +142,8 @@ class LILP:
         multi.add_variable(self.model)
         self.multi_loops.append(multi)
         self.model.update()
+
+    ######################## ADD CONSTRAINTS ###########################
 
     def add_unpaired_nucleotides_constraints(self, first, last) -> None:
         for i in range(first, last + 1):
@@ -215,9 +205,10 @@ class LILP:
         self.model.update()
 
     def add_hairpin_constraints(self) -> None:
-        for hl in self.hairpin_loops: 
+        for hl in self.hairpin_loops:
             if hl.energy > 0:
-                hl.create_hairpin_ifthen_constraint(self.model)
+                if hl.size < LARGE:
+                    hl.create_hairpin_ifthen_constraint(self.model)
             else:
                 hl.create_hairpin_onlyif_constraint(self.model, self.base_pairs)
 
@@ -232,7 +223,8 @@ class LILP:
     def add_internal_constraints(self)-> None:        
         for il in self.internal_loops:                
             if il.energy > 0:
-                il.create_internal_ifthen_constraint(self.model)
+                if il.size < LARGE:
+                    il.create_internal_ifthen_constraint(self.model)
             else:
                 il.create_internal_onlyif_constraint(self.model, self.base_pairs)
 
@@ -247,7 +239,8 @@ class LILP:
     def add_bulge_constraints(self) -> None:
         for bl in self.bulge_loops:
             if bl.energy > 0:
-                bl.create_bulge_ifthen_constraint(self.model)
+                if bl.size < LARGE:
+                    bl.create_bulge_ifthen_constraint(self.model)
             else:
                 bl.create_bulge_onlyif_constraint(self.model, self.base_pairs)
 
@@ -283,17 +276,25 @@ class LILP:
     def add_branch_constraints(self) -> None:
         for b in self.branches:
             if b.energy > 0:
-                b.create_branch_ifthen_constraint(self.model)
+                if b.distance < LARGE:
+                    b.create_branch_ifthen_constraint(self.model)
             else:
-                b.create_branch_onlyif_constraint(self.model, self.base_pairs)
-        self.model.update() 
+                if b.distance < LARGE:
+                    # b.create_branch_ifthen_constraint(self.model)
+                    b.create_branch_onlyif_constraint(self.model, self.base_pairs)
+        self.model.update()
+
+    def add_branch_pair_distance_constraints(self) -> None:
+        for b in self.branch_pairs:
+            b.create_branchpair_distance_constraint(self.model)
+        self.model.update()
 
     def add_branch_pairs_constraints(self) -> None:
         for bp in self.branch_pairs:
-            if bp.energy > 0:
+            # if bp.energy > 0:
                 bp.create_branch_pair_ifthen_constraints(self.model, self.branches)
-            else:
-                bp.create_branch_pair_onlyif_constraints(self.model, self.branches)
+            # else:
+            #     bp.create_branch_pair_onlyif_constraints(self.model, self.branches)
         self.model.update()
 
     def add_branch_base_pairs_constraints(self) -> None:
@@ -303,8 +304,11 @@ class LILP:
 
     def add_cbranch_constraints(self) -> None:
         for cb in self.cbranches:
-            # cb.create_auxiliary_constraints(self.model, self.branch_pairs)
-            cb.create_closing_branch_ifthen_constraint(self.model)
+            if cb.energy > 0:
+                if cb.distance < LARGE:
+                    cb.create_closing_branch_ifthen_constraint(self.model)
+            else:
+                cb.create_closing_branch_onlyif_constraint(self.model, self.base_pairs)
         self.model.update()
 
     def add_cbranch_distance_constraints(self) -> None:
@@ -312,37 +316,106 @@ class LILP:
             cb.create_branch_distance_constraint(self.model)
         self.model.update()
 
+    def add_energy_constraint(self, stem, hairpin, internal, bulge, branch, cbranch) -> gp.LinExpr:
+        inequality = gp.LinExpr()
+        if stem:
+            inequality.add(self.create_stem_term())
+        if hairpin:
+            inequality.add(self.create_hairpin_term())
+        if internal:
+            inequality.add(self.create_internal_term())
+        if bulge:
+            inequality.add(self.create_bulge_term())
+        if branch:
+            # inequality.add(self.create_branch_term())
+            inequality.add(self.create_branchpair_term())
+        if cbranch:
+            inequality.add(self.create_cbranch_term())        
+        self.model.addConstr(inequality >= MFE, f'MFE')
+        self.model.update()
+
+    def add_lowest_energy_constraint(self, stem, hairpin, internal, bulge, branch, cbranch) -> gp.LinExpr:
+        inequality = gp.LinExpr()
+        stem_energies = []
+        for sl in self.stem_loops:
+            stem_energies.append(sl.energy)
+
+        lowest_bound = min(stem_energies) * (len(self.rna_seq)/2 - 3)
+        if stem:
+            inequality.add(self.create_stem_term())
+        if hairpin:
+            inequality.add(self.create_hairpin_term())
+        if internal:
+            inequality.add(self.create_internal_term())
+        if bulge:
+            inequality.add(self.create_bulge_term())
+        if branch:
+            # inequality.add(self.create_branch_term())
+            inequality.add(self.create_branchpair_term())
+        if cbranch:
+            inequality.add(self.create_cbranch_term())        
+        self.model.addConstr(inequality >= lowest_bound, f'LOWEST_BOUND')
+        self.model.update()
+
+
+
+    ###################### CREATE OBJECTIVE TERMS ################################
+
     def create_stem_term(self) -> gp.LinExpr:
         objective = gp.LinExpr([sl.energy for sl in self.stem_loops], [sl.var for sl in self.stem_loops])
         return objective
     
+    # def create_hairpin_term(self) -> gp.LinExpr:
+    #     objective = gp.LinExpr([hl.energy for hl in self.hairpin_loops], [hl.var for hl in self.hairpin_loops])
+    #     return objective
+    
     def create_hairpin_term(self) -> gp.LinExpr:
-        objective = gp.LinExpr([hl.energy for hl in self.hairpin_loops], [hl.var for hl in self.hairpin_loops])
-        return objective
+        pairs = [(hl.energy, hl.var) for hl in self.hairpin_loops if hl.energy < M]
+        return gp.LinExpr([e for e, _ in pairs], [v for _, v in pairs])
+    
+    # def create_internal_term(self) -> gp.LinExpr:
+    #     objective = gp.LinExpr([il.energy for il in self.internal_loops], [il.var for il in self.internal_loops])
+    #     return objective
     
     def create_internal_term(self) -> gp.LinExpr:
-        objective = gp.LinExpr([il.energy for il in self.internal_loops], [il.var for il in self.internal_loops])
-        return objective
+        pairs = [(il.energy, il.var) for il in self.internal_loops if il.energy < M]
+        return gp.LinExpr([e for e, _ in pairs], [v for _, v in pairs])    
+    
+    # def create_bulge_term(self) -> gp.LinExpr:
+    #     objective = gp.LinExpr([bl.energy for bl in self.bulge_loops], [bl.var for bl in self.bulge_loops])
+    #     return objective
     
     def create_bulge_term(self) -> gp.LinExpr:
-        objective = gp.LinExpr([bl.energy for bl in self.bulge_loops], [bl.var for bl in self.bulge_loops])
-        return objective
+        pairs = [(bl.energy, bl.var) for bl in self.bulge_loops if bl.energy < M]
+        return gp.LinExpr([e for e, _ in pairs], [v for _, v in pairs])
     
     def create_multi_term(self) -> gp.LinExpr:
         objective = gp.LinExpr([ml.energy for ml in self.multi_loops], [ml.var for ml in self.multi_loops])
         return objective
     
+    # def create_branchpair_term(self) -> gp.LinExpr:
+    #     objective = gp.LinExpr([bp.energy for bp in self.branch_pairs], [bp.var for bp in self.branch_pairs])
+    #     return objective
+    
     def create_branchpair_term(self) -> gp.LinExpr:
-        objective = gp.LinExpr([bp.energy for bp in self.branch_pairs], [bp.var for bp in self.branch_pairs])
-        return objective
+        pairs = [(bp.energy, bp.var) for bp in self.branch_pairs if bp.energy < M]
+        return gp.LinExpr([e for e, _ in pairs], [v for _, v in pairs])
+    
+    # def create_branch_term(self) -> gp.LinExpr:
+    #     objective = gp.LinExpr([bp.energy for bp in self.branches], [bp.var for bp in self.branches])
+    #     return objective
     
     def create_branch_term(self) -> gp.LinExpr:
-        objective = gp.LinExpr([bp.energy for bp in self.branches], [bp.var for bp in self.branches])
-        return objective
+        pairs = [(bp.energy, bp.var) for bp in self.branches if bp.energy < M]
+        return gp.LinExpr([e for e, _ in pairs], [v for _, v in pairs])
+    
+    # def create_cbranch_term(self) -> gp.LinExpr:
+    #     objective = gp.LinExpr([cbp.energy for cbp in self.cbranches], [cbp.var for cbp in self.cbranches])
+    #     return objective
     
     def create_cbranch_term(self) -> gp.LinExpr:
-        objective = gp.LinExpr([cbp.energy for cbp in self.cbranches], [cbp.var for cbp in self.cbranches])
-        return objective
+        pairs = [(cbp.energy, cbp.var) for cbp in self.cbranches if cbp.energy < M]
+        return gp.LinExpr([e for e, _ in pairs], [v for _, v in pairs])
 
     ################ MODEL CONSCTRUCTION ###################################     
     
@@ -356,8 +429,6 @@ class LILP:
             objective.add(self.create_internal_term())
         if bulge:
             objective.add(self.create_bulge_term())
-        #if multi:
-           #objective.add(self.create_multi_term())
         if branch:
             # objective.add(self.create_branch_term())
             objective.add(self.create_branchpair_term())
@@ -385,7 +456,7 @@ class LILP:
         #if multi:
             #self.create_multi_loops()
 
-        print(f"PAIRS: {len(self.base_pairs)}, NUCLEOTIDES: {len(self.nucleotides)}, HAIRPIN: {len(self.hairpin_loops)}, STEMS: {len(self.stem_loops)}, BRANCHES: {len(self.branches)}, INTERNALS: {len(self.internal_loops)}, BULGES: {len(self.bulge_loops)}, BRANCH PAIRS: {len(self.branch_pairs)}, CLOSING_BRANCHES: {len(self.cbranches)}")    
+        print(f"PAIRS: {len(self.base_pairs)}, NUCLEOTIDES: {len(self.nucleotides)}, HAIRPIN: {len(self.hairpin_loops)}, STEMS: {len(self.stem_loops)}, INTERNALS: {len(self.internal_loops)}, BULGES: {len(self.bulge_loops)}, BRANCHES: {len(self.branches)}, BRANCH PAIRS: {len(self.branch_pairs)}, CLOSING_BRANCHES: {len(self.cbranches)}")    
     
     def create_constraints(self, stem, hairpin, internal, bulge, branch, cbranch, first, last):
         self.add_single_pair_constraints(first, last)
@@ -417,18 +488,14 @@ class LILP:
         if branch: 
             self.add_branch_distance_constraints()
             self.add_branch_constraints()
+            self.add_branch_pair_distance_constraints()
             self.add_branch_pairs_constraints()           
             self.add_branch_base_pairs_constraints()
         if cbranch:
             self.add_cbranch_distance_constraints()
             self.add_cbranch_constraints()
-        #if multi:
-            #self.add_multi_size_constraints()
-            #self.add_multi_constraints()
-            ## self.add_multi_ifthen_constraints()
-            ## self.add_multi_onlyif_constraints()
-            ## self.add_multi_max_number_constraint()
-            ## self.add_multi_energy_constraints(825)
+        # self.add_energy_constraint(stem, hairpin, internal, bulge, branch, cbranch)
+        # self.add_lowest_energy_constraint(stem, hairpin, internal, bulge, branch, cbranch)
 
 # seq_number = 1
 # chain_file = seq_files[seq_number]

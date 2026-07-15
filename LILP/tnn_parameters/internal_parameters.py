@@ -59,7 +59,7 @@ int11_df = pd.DataFrame(int11_data * scale, index=midx, columns=nidx)
 
 # print(int11_data)
 # print(int11_df)
-# print(int11_df.loc['AU', 'A']['CG','G'])
+# print(int11_df.loc['CG', 'G']['GC','G'])
 
 # 1x2 internal loops energies
 

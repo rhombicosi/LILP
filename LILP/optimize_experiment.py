@@ -5,13 +5,13 @@ from lilp import *
 from utils.sol_converter import *
 
 #len_start = 60
-seq_number = 55
+seq_number = 62
 
 # cwd = Path.cwd()
 # code_path = Path(__file__).parent.parent
 # arch_rel_path = '../../ARCHIVE II/'
 # archive_path = (code_path/arch_rel_path).resolve()
-# seq_len_dir = f'RNA_seq_{seq_len}'
+# # seq_len_dir = f'RNA_seq_{seq_len}'
 
 # chain_dir = os.path.join(archive_path, seq_len_dir)
 # seq_files = get_filenames(chain_dir, '.seq')
@@ -26,19 +26,18 @@ seq_data = parse_seq_file(chain_file)
 rna = seq_data['sequence'].upper()
 print(rna)
 
-# bp1 = BasePair(3,54,rna)
-# bp2 = BasePair(12,53,rna)
 
-model_name = 'lilp-cbranch'
+model_name = 'lilp-branch'
 start_name = 'lilp-branch-init'
-for f in range(16):
-    filepath = f'{incumbent_dir}/{lp_file_name}-incumbent-{model_name}_{f}.sol'
-    fold, pairs = pairs2brackets(filepath, rna)
-    print(fold)
+# for f in range(10):
+#     filepath = f'{incumbent_dir}/{lp_file_name}-incumbent-{model_name}_{f}.sol'
+#     fold, pairs = pairs2brackets(filepath, rna)
+#     print(fold)
     # calculate_sol_energy(filepath, rna)
 
 
-filepath = f'{sol_dir}/{lp_file_name}-{model_name}.sol'
+# filepath = f'{sol_dir}/{lp_file_name}-{model_name}.sol'
+filepath = os.path.join(solstart_dir, f'start.sol')
 fold, pairs = pairs2brackets(filepath, rna)
 print(fold)
 calculate_sol_energy(filepath, rna)

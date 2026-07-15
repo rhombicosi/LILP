@@ -139,7 +139,7 @@ def calculate_sol_energy(filepath, rna):
                     bp2 = BasePair(i2, j2, rna)
                     branch = InternalBranch((bp1, bp2), rna)
                     print(f'{element_type} :: ({i1}, {j1}), ({i2}, {j2}) :: {branch.energy}')
-                    # energy += branch.energy
+                    energy += branch.energy
                 
                 if element_type == 'BP':
                     i, j = indices
@@ -156,7 +156,7 @@ def calculate_sol_energy(filepath, rna):
                     energy += cbranch.energy
     print(energy)
 
-def sol_analyse(seq_files, seq_number, sol_dir, model_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, dot_bracket_unafold_dir, start):
+def sol_analyse(seq_files, seq_number, sol_dir, model_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, dot_bracket_unafold_dir):
 
     chain_file = seq_files[seq_number]
     chain_name_with_ext = os.path.basename(chain_file)        
@@ -166,11 +166,7 @@ def sol_analyse(seq_files, seq_number, sol_dir, model_name, dot_bracket_dir, dot
     seq_data = parse_seq_file(chain_file)
     this_RNA = seq_data['sequence']    
     
-    if start:
-        print("START")
-        filepath = os.path.join(solstart_dir, f'{lp_file_name}-start.sol')
-    else:
-        filepath = os.path.join(sol_dir, f'{lp_file_name}-{model_name}.sol')
+    filepath = os.path.join(sol_dir, f'{lp_file_name}-{model_name}.sol')
 
     ic(filepath)
 
@@ -199,12 +195,9 @@ def sol_analyse(seq_files, seq_number, sol_dir, model_name, dot_bracket_dir, dot
     gen_brackets, gen_pairs = pairs2brackets(filepath, this_RNA)
 
     print(gen_brackets)
-    print(gen_pairs)
+    print(gen_pairs)    
     
-    if start:
-        file_bracket = f'{dot_bracket_dir}/{lp_file_name}-dotbrackets.txt'
-    else: 
-        file_bracket = f'{dot_bracket_dir}/{lp_file_name}-dotbrackets-{model_name}.txt'
+    file_bracket = f'{dot_bracket_dir}/{lp_file_name}-dotbrackets-{model_name}.txt'
 
     # with open(file_bracket, 'a') as file:
     with open(file_bracket, 'w') as file:
