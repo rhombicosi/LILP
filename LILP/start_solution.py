@@ -117,10 +117,10 @@ def generate_start_sol(dotbracket_file, sol_start):
 
 # dotbracket_file = f'{dot_bracket_start_dir}/{lp_file_name}-dotbrackets-{start_name}.txt'
 
-dotbracket_file = f'{dot_bracket_start_dir}/test.txt'
-sol_start = os.path.join(solstart_dir, f'start.sol')
+# dotbracket_file = f'{dot_bracket_start_dir}/test.txt'
+# sol_start = os.path.join(solstart_dir, f'start.sol')
 
 # dotbracket_file = f'{dot_bracket_start_dir}/{lp_file_name}-dotbrackets-{start_name}.txt'
 # sol_start = f'{solstart_dir}/{lp_file_name}-{model_name}-start.sol'
 
-generate_start_sol(dotbracket_file, sol_start)
+# generate_start_sol(dotbracket_file, sol_start)

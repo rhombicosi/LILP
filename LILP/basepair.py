@@ -44,6 +44,18 @@ class BasePair:
     def _find_base_pairs_matches(base_pairs: List["BasePair"], i: int, j: int) -> "BasePair":
         return next((bp for bp in base_pairs if bp.i == i and bp.j == j), None)
     
+    def _find_base_pair_in_ssq(base_pairs: List["BasePair"], start: int, end: int) -> List["BasePair"]:
+        return [bp for bp in base_pairs if bp.i > start and bp.j < end]
+    
+    def _find_base_pair_in_twossq(base_pairs: List["BasePair"], start1: int, end1: int, start2: int, end2: int) -> List["BasePair"]:
+        return [bp for bp in base_pairs if (bp.i > start1 and bp.j < end1) or (bp.i > start2 and bp.j < end2) or (bp.i > start1 and bp.i < end1 and bp.j > start2 and bp.j < end2)]
+    
+    def _find_base_pair_in_threessq(base_pairs: List["BasePair"], start1: int, end1: int, start2: int, end2: int, start3: int, end3:int) -> List["BasePair"]:
+        return [bp for bp in base_pairs if (bp.i > start2 and bp.j < end2) or (bp.i > start1 and bp.i < end1 and bp.j > start2 and bp.j < end2) or (bp.i > start2 and bp.i < end2 and bp.j > start3 and bp.j < end3)]
+    
+    def _find_nt_base_pair_in_ssq(base_pairs: List["BasePair"], nt: int, start: int, end: int) -> List["BasePair"]:
+        return [bp for bp in base_pairs if (bp.i > start and bp.i < end and bp.j == nt) or (bp.i == nt and  bp.j > start and bp.j < end)]
+    
     def create_single_pair_constraint(model: gp.Model, base_pairs: List["BasePair"], i: int) -> None:        
         inequality = gp.LinExpr(0)
         matches = BasePair._find_base_pairs_with_index(base_pairs, i)

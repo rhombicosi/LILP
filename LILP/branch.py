@@ -67,6 +67,44 @@ class InternalBranch():
             
         inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
         model.addConstr(inequality <= self.distance + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+    
+    # def create_branch_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
+    #     bp1 = self.bp1
+    #     bp2 = self.bp2
+
+    #     inequality = gp.LinExpr(0)                       
+    #     matches = BasePair._find_base_pair_in_threessq(base_pairs, 0, bp1.i, bp1.j, bp2.i, bp2.j, len(self.RNA) + 1)
+
+    #     if matches:
+    #         for bp in matches:
+    #             nbp = model.getVarByName(f'Z_{bp.i}_{bp.j}')
+    #             inequality.add(gp.LinExpr([1], [nbp]))
+            
+    #     inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
+    #     model.addConstr(inequality <= len(matches) + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+
+    # def create_branch_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
+    #     bp1 = self.bp1
+    #     bp2 = self.bp2
+
+    #     if self.distance > 0:
+    #         for u in range(bp1.j + 1, bp2.i):
+    #             inequality = gp.LinExpr(0)
+    #             inequality.add(gp.LinExpr([3], [self.var]))
+
+    #             matches = BasePair._find_base_pairs_with_index(base_pairs, u)
+                
+    #             if matches:
+    #                 for bp in matches:
+    #                     inequality.add(gp.LinExpr([1], [bp.var]))
+                    
+    #             inequality.add(gp.LinExpr([-1, -1],[bp1.var, bp2.var]))
+    #             model.addConstr(inequality <= 1, f'BOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}-{u}') 
+    #     else:
+    #         inequality = gp.LinExpr(0)
+    #         inequality.add(gp.LinExpr([3], [self.var]))
+    #         inequality.add(gp.LinExpr([-1, -1],[bp1.var, bp2.var]))
+    #         model.addConstr(inequality <= 1, f'BOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
     def create_branch_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
         bp1 = self.bp1
@@ -77,10 +115,18 @@ class InternalBranch():
                 inequality = gp.LinExpr(0)
                 inequality.add(gp.LinExpr([3], [self.var]))
 
-                matches = BasePair._find_base_pairs_with_index(base_pairs, u)
-                
-                if matches:
-                    for bp in matches:
+                matches1 = BasePair._find_nt_base_pair_in_ssq(base_pairs, u, 0, bp1.i)
+                matches2 = BasePair._find_nt_base_pair_in_ssq(base_pairs, u, bp1.j, bp2.i)
+                matches3 = BasePair._find_nt_base_pair_in_ssq(base_pairs, u, bp2.j, len(self.RNA) + 1)
+
+                if matches1:
+                    for bp in matches1:
+                        inequality.add(gp.LinExpr([1], [bp.var]))
+                if matches2:
+                    for bp in matches2:
+                        inequality.add(gp.LinExpr([1], [bp.var]))
+                if matches3:
+                    for bp in matches3:
                         inequality.add(gp.LinExpr([1], [bp.var]))
                     
                 inequality.add(gp.LinExpr([-1, -1],[bp1.var, bp2.var]))
@@ -89,7 +135,7 @@ class InternalBranch():
             inequality = gp.LinExpr(0)
             inequality.add(gp.LinExpr([3], [self.var]))
             inequality.add(gp.LinExpr([-1, -1],[bp1.var, bp2.var]))
-            model.addConstr(inequality <= 1, f'BOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')        
+            model.addConstr(inequality <= 1, f'BOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')       
 
     def create_branch_max_number_constraint(model: gp.Model, branches: List["InternalBranch"]) -> None:
         inequality = gp.LinExpr(0)

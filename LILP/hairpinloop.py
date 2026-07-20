@@ -35,38 +35,49 @@ class HairpinLoop(Loop):
             inequality = gp.LinExpr([1], [self.var])
             model.addConstr(inequality == 0, f'HS_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
             
-    def create_hairpin_ifthen_constraint(self, model: gp.Model) -> None:
-        inequality = gp.LinExpr(0)
+    # def create_hairpin_ifthen_constraint(self, model: gp.Model) -> None:
+    #     inequality = gp.LinExpr(0)
         
-        for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
-            nucleotide = model.getVarByName(f'X_{u}')
-            inequality.add(gp.LinExpr([1], [nucleotide]))
+    #     for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
+    #         nucleotide = model.getVarByName(f'X_{u}')
+    #         inequality.add(gp.LinExpr([1], [nucleotide]))
+        
+    #     inequality.add(gp.LinExpr([1, -1],[self.base_pairs[0].var, self.var]))            
+    #     model.addConstr(inequality <= self.size, f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
+
+    def create_hairpin_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
+        inequality = gp.LinExpr(0)
+        matches = BasePair._find_base_pair_in_ssq(base_pairs, self.base_pairs[0].i, self.base_pairs[0].j)        
+
+        if matches:
+            for bp in matches:
+                nbp = model.getVarByName(f'X_{bp.i}_{bp.j}')
+                inequality.add(gp.LinExpr([1], [nbp]))
         
         inequality.add(gp.LinExpr([1, -1],[self.base_pairs[0].var, self.var]))            
-        model.addConstr(inequality <= self.size, f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
+        model.addConstr(inequality <= len(matches), f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
+
+    # def create_hairpin_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:        
+    #     for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
+    #         inequality = gp.LinExpr([2], [self.var])
+    #         matches = BasePair._find_base_pairs_with_index(base_pairs, u)
+
+    #         for bp in matches:
+    #             inequality.add(gp.LinExpr([1], [bp.var]))
+            
+    #         inequality.add(gp.LinExpr([-1], [self.base_pairs[0].var]))
+    #         model.addConstr(inequality <= 1, f'HOI_{self.base_pairs[0].i}_{self.base_pairs[0].j}_{u}')
 
     def create_hairpin_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:        
         for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
             inequality = gp.LinExpr([2], [self.var])
-            matches = BasePair._find_base_pairs_with_index(base_pairs, u)
+            matches = BasePair._find_nt_base_pair_in_ssq(base_pairs, u, self.base_pairs[0].i, self.base_pairs[0].j)
 
             for bp in matches:
                 inequality.add(gp.LinExpr([1], [bp.var]))
             
             inequality.add(gp.LinExpr([-1], [self.base_pairs[0].var]))
             model.addConstr(inequality <= 1, f'HOI_{self.base_pairs[0].i}_{self.base_pairs[0].j}_{u}')
-
-    # def create_hairpin_onlyif_constraint(self, model: gp.Model) -> None:        
-    #     for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
-    #         inequality = gp.LinExpr([2], [self.var])
-            
-    #         for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):
-    #             nucleotide = model.getVarByName(f'X_{u}')
-    #             inequality.add(gp.LinExpr([-1], [nucleotide]))
-            
-    #         inequality.add(gp.LinExpr([-1], [self.base_pairs[0].var]))
-    #         model.addConstr(inequality <= 1 - self.size, f'HOI_{self.base_pairs[0].i}_{self.base_pairs[0].j}_{u}')
-
 
     def create_hairpin_max_number_constraint(model: gp.Model, hairpin_loops: List["HairpinLoop"]) -> None:
         inequality = gp.LinExpr(0)

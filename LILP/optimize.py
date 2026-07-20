@@ -28,7 +28,8 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     rna_model.create_constraints(stem, hairpin, internal, bulge, branch, cbranch, first, last)
     rna_model.create_objective(stem, hairpin, internal, bulge, branch, cbranch)
 
-    # rna_model.model.addConstr(rna_model.model.getVarByName(f'P_7_47') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'P_15_20') == 1)
+    # rna_model.model.addConstr(rna_model.model.getVarByName(f'P_8_27') == 1)
     # rna_model.model.addConstr(rna_model.model.getVarByName(f'P_24_40') == 1)
     # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_41') == 1)
     # rna_model.model.addConstr(rna_model.model.getVarByName(f'X_42') == 1)
@@ -64,6 +65,7 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     rna_model.model.setParam("TimeLimit", 2400)
     rna_model.model.setParam("MIPGap", 0.002)
     rna_model.model.setParam("Threads", 8)
+    # rna_model.model.setParam("Method", 3)
     # rna_model.model.setParam("Threads", 8)
     rna_model.model.setParam("NodefileStart", 0.3)  # start disk swapping earlier
     

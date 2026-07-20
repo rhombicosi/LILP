@@ -5,7 +5,7 @@ from lilp import *
 from utils.sol_converter import *
 
 #len_start = 60
-seq_number = 62
+seq_number = 15
 
 # cwd = Path.cwd()
 # code_path = Path(__file__).parent.parent
@@ -36,8 +36,8 @@ start_name = 'lilp-branch-init'
     # calculate_sol_energy(filepath, rna)
 
 
-# filepath = f'{sol_dir}/{lp_file_name}-{model_name}.sol'
-filepath = os.path.join(solstart_dir, f'start.sol')
+filepath = f'{sol_dir}/{lp_file_name}-{model_name}.sol'
+# filepath = os.path.join(solstart_dir, f'start.sol')
 fold, pairs = pairs2brackets(filepath, rna)
 print(fold)
 calculate_sol_energy(filepath, rna)

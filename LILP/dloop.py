@@ -1,5 +1,4 @@
-from typing import List, Tuple, Optional
-from enum import Enum
+from typing import List
 from basepair import *
 from lilp_config import *
 
