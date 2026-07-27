@@ -29,8 +29,8 @@ add_column(results_df, 'MFE_vienna', vienna_MFEs)
 add_column(results_df, 'MFE_unafold', unafold_MFEs)
 print(results_df)
 
-n1 = 15 #55#35
-n2 = 16 #56#36 #len(seq_files)
+n1 = 55 #15 #55 #35
+n2 = 56 #16 #56 #36 #len(seq_files)
 
 for seq_no in range (n1, n2):
 

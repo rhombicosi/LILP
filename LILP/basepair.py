@@ -49,6 +49,9 @@ class BasePair:
     
     def _find_base_pair_in_twossq(base_pairs: List["BasePair"], start1: int, end1: int, start2: int, end2: int) -> List["BasePair"]:
         return [bp for bp in base_pairs if (bp.i > start1 and bp.j < end1) or (bp.i > start2 and bp.j < end2) or (bp.i > start1 and bp.i < end1 and bp.j > start2 and bp.j < end2)]
+
+    def _find_base_pair_btwn_twossq(base_pairs: List["BasePair"], start1: int, end1: int, start2: int, end2: int) -> List["BasePair"]:
+            return [bp for bp in base_pairs if (bp.i > start1 and bp.i < end1) and (bp.j > start2 and bp.j < end2)]
     
     def _find_base_pair_in_threessq(base_pairs: List["BasePair"], start1: int, end1: int, start2: int, end2: int, start3: int, end3:int) -> List["BasePair"]:
         return [bp for bp in base_pairs if (bp.i > start2 and bp.j < end2) or (bp.i > start1 and bp.i < end1 and bp.j > start2 and bp.j < end2) or (bp.i > start2 and bp.i < end2 and bp.j > start3 and bp.j < end3)]

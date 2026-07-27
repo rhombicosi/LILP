@@ -45,17 +45,27 @@ class HairpinLoop(Loop):
     #     inequality.add(gp.LinExpr([1, -1],[self.base_pairs[0].var, self.var]))            
     #     model.addConstr(inequality <= self.size, f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
 
-    def create_hairpin_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
-        inequality = gp.LinExpr(0)
-        matches = BasePair._find_base_pair_in_ssq(base_pairs, self.base_pairs[0].i, self.base_pairs[0].j)        
+    # def create_hairpin_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
+    #     inequality = gp.LinExpr(0)
+    #     matches = BasePair._find_base_pair_in_ssq(base_pairs, self.base_pairs[0].i, self.base_pairs[0].j)        
 
-        if matches:
-            for bp in matches:
-                nbp = model.getVarByName(f'X_{bp.i}_{bp.j}')
-                inequality.add(gp.LinExpr([1], [nbp]))
+    #     if matches:
+    #         for bp in matches:
+    #             nbp = model.getVarByName(f'X_{bp.i}_{bp.j}')
+    #             inequality.add(gp.LinExpr([1], [nbp]))
         
-        inequality.add(gp.LinExpr([1, -1],[self.base_pairs[0].var, self.var]))            
-        model.addConstr(inequality <= len(matches), f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
+    #     inequality.add(gp.LinExpr([1, -1],[self.base_pairs[0].var, self.var]))            
+    #     model.addConstr(inequality <= len(matches), f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
+
+    def create_hairpin_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
+            inequality = gp.LinExpr(0)
+            
+            ssq = model.getVarByName(f'SSQ_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
+            inequality.add(gp.LinExpr([1],[ssq]))      
+    
+            
+            inequality.add(gp.LinExpr([1, -1],[self.base_pairs[0].var, self.var]))            
+            model.addConstr(inequality <= 1, f'HIT_{self.base_pairs[0].i}_{self.base_pairs[0].j}')
 
     # def create_hairpin_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:        
     #     for u in range(self.base_pairs[0].i + 1, self.base_pairs[0].j):

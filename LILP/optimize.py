@@ -3,22 +3,23 @@ from utils.constants_paths import *
 from utils.prepro_run import *
 from lilp import *
 from start_solution import *
+from callbacks import *
 
-def make_callback():
-    best_obj = float("inf")
-    best_obj_time = None
+# def make_callback():
+#     best_obj = float("inf")
+#     best_obj_time = None
 
-    def callback(model, where):
-        nonlocal best_obj, best_obj_time
+#     def callback(model, where):
+#         nonlocal best_obj, best_obj_time
 
-        if where == GRB.Callback.MIPSOL:
-            obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
+#         if where == GRB.Callback.MIPSOL:
+#             obj = model.cbGet(GRB.Callback.MIPSOL_OBJ)
 
-            if obj < best_obj:
-                best_obj = obj
-                best_obj_time = model.cbGet(GRB.Callback.RUNTIME)
+#             if obj < best_obj:
+#                 best_obj = obj
+#                 best_obj_time = model.cbGet(GRB.Callback.RUNTIME)
 
-    return callback, lambda: (best_obj, best_obj_time)
+#     return callback, lambda: (best_obj, best_obj_time)
 
 def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, cbranch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None) -> None:
     
@@ -62,11 +63,11 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.setParam('CoverCuts', 2)    # knapsack cover aggressiveness
     # rna_model.model.setParam('MIRCuts', 2)      # MIR cut aggressiveness
     # rna_model.model.setParam('CliqueCuts', 2)   # clique cut aggressiveness
-    rna_model.model.setParam("TimeLimit", 2400)
+    rna_model.model.setParam("TimeLimit", 7200)
     rna_model.model.setParam("MIPGap", 0.002)
     rna_model.model.setParam("Threads", 8)
-    # rna_model.model.setParam("Method", 3)
-    # rna_model.model.setParam("Threads", 8)
+    rna_model.model.setParam("DisplayInterval", 3)
+    rna_model.model.setParam("Method", 3)     
     rna_model.model.setParam("NodefileStart", 0.3)  # start disk swapping earlier
     
     # if start:

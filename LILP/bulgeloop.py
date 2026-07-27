@@ -56,33 +56,53 @@ class BulgeLoop(Loop):
     #         inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
     #         model.addConstr(inequality <= self.size + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
-    def create_bulge_ifthen_constraint(self, model: gp.Model,  base_pairs: List[BasePair]) -> None:
-        bp1 = self.base_pairs[0]
-        bp2 = self.base_pairs[1]  
+    # def create_bulge_ifthen_constraint(self, model: gp.Model,  base_pairs: List[BasePair]) -> None:
+    #     bp1 = self.base_pairs[0]
+    #     bp2 = self.base_pairs[1]  
 
-        if bp2.i == bp1.i + 1:
-            inequality = gp.LinExpr(0)
-            matches = BasePair._find_base_pair_in_ssq(base_pairs, bp2.j, bp1.j)        
+    #     if bp2.i == bp1.i + 1:
+    #         inequality = gp.LinExpr(0)
+    #         matches = BasePair._find_base_pair_in_ssq(base_pairs, bp2.j, bp1.j)        
 
-            if matches:
-                for bp in matches:
-                    nbp = model.getVarByName(f'X_{bp.i}_{bp.j}')
-                    inequality.add(gp.LinExpr([1], [nbp]))
+    #         if matches:
+    #             for bp in matches:
+    #                 nbp = model.getVarByName(f'X_{bp.i}_{bp.j}')
+    #                 inequality.add(gp.LinExpr([1], [nbp]))
         
-            inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
-            model.addConstr(inequality <= len(matches) + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+    #         inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
+    #         model.addConstr(inequality <= len(matches) + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
-        elif bp2.j == bp1.j - 1:
-            inequality = gp.LinExpr(0)
-            matches = BasePair._find_base_pair_in_ssq(base_pairs, bp1.i, bp2.i)
+    #     elif bp2.j == bp1.j - 1:
+    #         inequality = gp.LinExpr(0)
+    #         matches = BasePair._find_base_pair_in_ssq(base_pairs, bp1.i, bp2.i)
 
-            if matches:
-                for bp in matches:
-                    nbp = model.getVarByName(f'X_{bp.i}_{bp.j}')
-                    inequality.add(gp.LinExpr([1], [nbp]))
+    #         if matches:
+    #             for bp in matches:
+    #                 nbp = model.getVarByName(f'X_{bp.i}_{bp.j}')
+    #                 inequality.add(gp.LinExpr([1], [nbp]))
 
-            inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
-            model.addConstr(inequality <= len(matches) + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+    #         inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
+    #         model.addConstr(inequality <= len(matches) + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+
+    def create_bulge_ifthen_constraint(self, model: gp.Model,  base_pairs: List[BasePair]) -> None:
+            bp1 = self.base_pairs[0]
+            bp2 = self.base_pairs[1]  
+    
+            if bp2.i == bp1.i + 1:
+                inequality = gp.LinExpr(0)
+                ssq = model.getVarByName(f'SSQ_{bp2.j}_{bp1.j}')
+                inequality.add(gp.LinExpr([1],[ssq]))   
+            
+                inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
+                model.addConstr(inequality <= 2, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+    
+            elif bp2.j == bp1.j - 1:
+                inequality = gp.LinExpr(0)
+                ssq = model.getVarByName(f'SSQ_{bp1.i}_{bp2.i}')
+                inequality.add(gp.LinExpr([1],[ssq]))
+    
+                inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
+                model.addConstr(inequality <= 2, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
     # def create_bulge_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
     #     bp1 = self.base_pairs[0]

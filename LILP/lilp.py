@@ -20,6 +20,7 @@ class LILP:
         self.nucleotides : List[gp.Var] = []
         self.base_pairs : List[BasePair] = []
         self.not_pairs : List[gp.Var] = []
+        self.subsequences: List[Subsequence] = []
         self.first_pairs : List[BasePair] = []
         self.last_pairs : List[BasePair] = []
         self.hairpin_loops : List[HairpinLoop] = []
@@ -34,7 +35,9 @@ class LILP:
 
     def create_nucleotides(self, first, last) -> None:
         for i in range(first, last + 1):
-            var = self.model.addVar(vtype=GRB.BINARY, name=f'X_{i}')   
+            # var = self.model.addVar(vtype=GRB.BINARY, name=f'X_{i}')
+            var = self.model.addVar(vtype=GRB.BINARY, name=f'Y_{i}')
+            var = self.model.addVar(vtype=GRB.BINARY, name=f'Z_{i}') 
             self.nucleotides.append(var)
         self.model.update()
 
@@ -49,10 +52,40 @@ class LILP:
 
     def create_not_pairs(self) -> None:        
         for bp in self.base_pairs:
-            var = self.model.addVar(vtype=GRB.BINARY, name=f'X_{bp.i}_{bp.j}')
-            # var = self.model.addVar(vtype=GRB.BINARY, name=f'Y_{bp.i}_{bp.j}') 
-            # var = self.model.addVar(vtype=GRB.BINARY, name=f'Z_{bp.i}_{bp.j}')  
+            # var = self.model.addVar(vtype=GRB.BINARY, name=f'X_{bp.i}_{bp.j}')
+            var = self.model.addVar(vtype=GRB.BINARY, name=f'Y_{bp.i}_{bp.j}') 
+            var = self.model.addVar(vtype=GRB.BINARY, name=f'Z_{bp.i}_{bp.j}')  
             self.not_pairs.append(var)
+        self.model.update()
+
+    def create_subsequences(self) -> None:
+        ssq = set()
+        for hl in self.hairpin_loops:
+            ssq.add((hl.base_pairs[0].i, hl.base_pairs[0].j))
+
+        for il in self.internal_loops:
+            ssq.add((il.base_pairs[0].i, il.base_pairs[1].i))
+            ssq.add((il.base_pairs[1].j, il.base_pairs[0].j))
+
+        for bl in self.bulge_loops:
+            bp1 = bl.base_pairs[0]
+            bp2 = bl.base_pairs[1]
+
+            if bp2.i == bp1.i + 1:
+                ssq.add((bp2.j, bp1.j))
+            elif bp2.j == bp1.j - 1:
+                ssq.add((bp1.i, bp2.i))
+
+        for br in self.branches:
+            bp1 = br.base_pairs[0]
+            bp2 = br.base_pairs[1]
+
+            ssq.add((br.bp1.j,br.bp2.i))
+
+        for s,e in ssq:
+            sq = Subsequence(s, e)
+            sq.add_variable(self.model)
+            self.subsequences.append(sq)
         self.model.update()
 
     def create_first_pairs(self) -> None:
@@ -156,16 +189,28 @@ class LILP:
 
     def add_unpaired_nucleotides_constraints(self, first, last) -> None:
         for i in range(first, last + 1):
-            inequality = gp.LinExpr(0)
+            # inequality1 = gp.LinExpr(0)
+            inequality2 = gp.LinExpr(0)
+            inequality3 = gp.LinExpr(0)
             matches = BasePair._find_base_pairs_with_index(self.base_pairs, i)
 
             if matches:
                 for bp in matches:
-                    inequality.add(gp.LinExpr([1.0], [bp.var]))
+                    # inequality1.add(gp.LinExpr([1], [bp.var]))
+                    inequality2.add(gp.LinExpr([1], [bp.var]))
+                    inequality3.add(gp.LinExpr([1], [bp.var]))
                 
-                nucleotide = self.model.getVarByName(f'X_{i}')
-                inequality.add(gp.LinExpr([1.0], [nucleotide]))
-                self.model.addConstr(inequality == 1, f'UN_{i}')
+                # nucleotide = self.model.getVarByName(f'X_{i}')
+                # inequality1.add(gp.LinExpr([1], [nucleotide]))
+                # self.model.addConstr(inequality1 == 1, f'UNX_{i}')
+
+                nucleotide = self.model.getVarByName(f'Y_{i}')
+                inequality2.add(gp.LinExpr([1], [nucleotide]))
+                self.model.addConstr(inequality2 == 1, f'UNY_{i}')
+
+                nucleotide = self.model.getVarByName(f'Z_{i}')
+                inequality3.add(gp.LinExpr([1], [nucleotide]))
+                self.model.addConstr(inequality3 == 1, f'UNZ_{i}')
         self.model.update()
     
     def add_single_pair_constraints(self, first, last) -> None:
@@ -181,21 +226,26 @@ class LILP:
 
     def add_not_pairs_constraints(self) -> None: 
         for bp in self.base_pairs:
+            # inequality = gp.LinExpr(0)
+            # nbp = self.model.getVarByName(f'X_{bp.i}_{bp.j}')
+            # inequality.add(gp.LinExpr([1.0, 1.0], [nbp, bp.var]))
+            # self.model.addConstr(inequality == 1, f'NXBP_{bp.i}_{bp.j}')
+
             inequality = gp.LinExpr(0)
-            nbp = self.model.getVarByName(f'X_{bp.i}_{bp.j}')
+            nbp = self.model.getVarByName(f'Y_{bp.i}_{bp.j}')
             inequality.add(gp.LinExpr([1.0, 1.0], [nbp, bp.var]))
-            self.model.addConstr(inequality == 1, f'NXBP_{bp.i}_{bp.j}')
+            self.model.addConstr(inequality == 1, f'NYBP_{bp.i}_{bp.j}')
 
-            # inequality = gp.LinExpr(0)
-            # nbp = self.model.getVarByName(f'Y_{bp.i}_{bp.j}')
-            # inequality.add(gp.LinExpr([1.0, 1.0], [nbp, bp.var]))
-            # self.model.addConstr(inequality == 1, f'NYBP_{bp.i}_{bp.j}')
+            inequality = gp.LinExpr(0)
+            nbp = self.model.getVarByName(f'Z_{bp.i}_{bp.j}')
+            inequality.add(gp.LinExpr([1.0, 1.0], [nbp, bp.var]))
+            self.model.addConstr(inequality == 1, f'NZBP_{bp.i}_{bp.j}')
+        self.model.update()  
 
-            # inequality = gp.LinExpr(0)
-            # nbp = self.model.getVarByName(f'Z_{bp.i}_{bp.j}')
-            # inequality.add(gp.LinExpr([1.0, 1.0], [nbp, bp.var]))
-            # self.model.addConstr(inequality == 1, f'NZBP_{bp.i}_{bp.j}')
-        self.model.update()    
+    def add_subsequences_constraints(self) -> None:
+        for ssq in self.subsequences:
+            ssq.create_unpaired_subsequence_constaint(self.model, self.base_pairs)
+        self.model.update()
 
     def add_stem_ifthen_constraints(self) -> None:
         for sl in self.stem_loops:
@@ -251,7 +301,7 @@ class LILP:
         for il in self.internal_loops:                
             if il.energy > 0:
                 if il.size < LARGE:
-                    il.create_internal_ifthen_constraint(self.model)
+                    il.create_internal_ifthen_constraint(self.model, self.base_pairs)
             else:
                 il.create_internal_onlyif_constraint(self.model, self.base_pairs)
 
@@ -304,10 +354,9 @@ class LILP:
         for b in self.branches:
             if b.energy > 0:
                 if b.distance < LARGE:
-                    b.create_branch_ifthen_constraint(self.model)
+                    b.create_branch_ifthen_constraint(self.model, self.base_pairs)
             else:
                 if b.distance < LARGE:
-                    # b.create_branch_ifthen_constraint(self.model)
                     b.create_branch_onlyif_constraint(self.model, self.base_pairs)
         self.model.update()
 
@@ -465,7 +514,7 @@ class LILP:
     def create_variables(self, stem, hairpin, internal, bulge, branch, cbranch, first, last):
         self.create_base_pairs(first, last)                
         self.create_not_pairs()                       
-        self.create_nucleotides(first, last) 
+        # self.create_nucleotides(first, last)
         if hairpin:
             self.create_hairpin_loops()       
         if stem:            
@@ -478,11 +527,10 @@ class LILP:
             self.create_branches()
             self.create_branch_pairs()      
         if cbranch:
-            self.create_closing_branches() 
-        #if multi:
-            #self.create_multi_loops()
+            self.create_closing_branches()         
+        self.create_subsequences()
 
-        print(f"PAIRS: {len(self.base_pairs)}, NUCLEOTIDES: {len(self.nucleotides)}, HAIRPIN: {len(self.hairpin_loops)}, STEMS: {len(self.stem_loops)}, INTERNALS: {len(self.internal_loops)}, BULGES: {len(self.bulge_loops)}, BRANCHES: {len(self.branches)}, BRANCH PAIRS: {len(self.branch_pairs)}, CLOSING_BRANCHES: {len(self.cbranches)}")    
+        print(f"PAIRS: {len(self.base_pairs)}, NUCLEOTIDES: {len(self.nucleotides)}, SSQ: {len(self.subsequences)}, HAIRPIN: {len(self.hairpin_loops)}, STEMS: {len(self.stem_loops)}, INTERNALS: {len(self.internal_loops)}, BULGES: {len(self.bulge_loops)}, BRANCHES: {len(self.branches)}, BRANCH PAIRS: {len(self.branch_pairs)}, CLOSING_BRANCHES: {len(self.cbranches)}")    
     
     def create_constraints(self, stem, hairpin, internal, bulge, branch, cbranch, first, last):
         self.add_single_pair_constraints(first, last)
@@ -491,8 +539,9 @@ class LILP:
             # self.add_stem_ifthen_constraints()
             # self.add_stem_onlyif_constraints()
             self.add_stem_constraints()
-        self.add_unpaired_nucleotides_constraints(first, last)
+        # self.add_unpaired_nucleotides_constraints(first, last)
         self.add_not_pairs_constraints()
+        self.add_subsequences_constraints()
         if hairpin:
             self.add_hairpin_size_constraints()
             self.add_hairpin_constraints()
@@ -540,13 +589,13 @@ class LILP:
 # first = 1
 # last = len(rna)
 
-# rna_model.create_variables(0, 0, 0, 0, 0, 0, first, last)
+# rna_model.create_variables(0, 1, 1, 1, 1, 0, first, last)
 # rna_model.create_constraints(0, 0, 0, 0, 0, 0, first, last)
 # rna_model.create_objective(0, 0, 0, 0, 0, 1)
 
-# print(len(rna_model.not_pairs))
-# for nbp in rna_model.not_pairs:
-#     print(nbp)
+# print(len(rna_model.subsequences))
+# for ssq in rna_model.subsequences:
+#     print(ssq.var)
 
 
 # bl_energies = []

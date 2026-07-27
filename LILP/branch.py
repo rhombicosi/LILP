@@ -56,17 +56,17 @@ class InternalBranch():
             inequality = gp.LinExpr([1], [self.var])
             model.addConstr(inequality == 0, f'BD-{self.base_pairs[0].i}-{self.base_pairs[0].j}-{self.base_pairs[1].i}-{self.base_pairs[1].j}')
 
-    def create_branch_ifthen_constraint(self, model: gp.Model) -> None:
-        bp1 = self.bp1
-        bp2 = self.bp2
-        inequality = gp.LinExpr(0)                       
+    # def create_branch_ifthen_constraint(self, model: gp.Model) -> None:
+    #     bp1 = self.bp1
+    #     bp2 = self.bp2
+    #     inequality = gp.LinExpr(0)                       
 
-        for u in range(bp1.j + 1, bp2.i):
-            nucleotide = model.getVarByName(f'X_{u}')
-            inequality.add(gp.LinExpr([1],[nucleotide]))
+    #     for u in range(bp1.j + 1, bp2.i):
+    #         nucleotide = model.getVarByName(f'Z_{u}')
+    #         inequality.add(gp.LinExpr([1],[nucleotide]))
             
-        inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
-        model.addConstr(inequality <= self.distance + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+    #     inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
+    #     model.addConstr(inequality <= self.distance + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
     
     # def create_branch_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
     #     bp1 = self.bp1
@@ -82,6 +82,29 @@ class InternalBranch():
             
     #     inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
     #     model.addConstr(inequality <= len(matches) + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+
+    def create_branch_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
+            bp1 = self.bp1
+            bp2 = self.bp2
+            inequality = gp.LinExpr(0)
+
+            ssq = model.getVarByName(f'SSQ_{bp1.j}_{bp2.i}')
+            inequality.add(gp.LinExpr([1],[ssq]))  
+
+            matches1 = BasePair._find_base_pair_btwn_twossq(base_pairs, 0, bp1.i, bp1.j, bp2.i)
+            if matches1:
+                for bp in matches1:
+                    nbp = model.getVarByName(f'Z_{bp.i}_{bp.j}')
+                    inequality.add(gp.LinExpr([1], [nbp]))
+            matches2 = BasePair._find_base_pair_btwn_twossq(base_pairs, bp1.j, bp2.i, bp2.j, len(self.RNA) + 1)
+            if matches2:
+                for bp in matches2:
+                    nbp = model.getVarByName(f'Z_{bp.i}_{bp.j}')
+                    inequality.add(gp.LinExpr([1], [nbp]))                             
+    
+                
+    #         inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
+    #         model.addConstr(inequality <= len(matches1) + len(matches2) + 2, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
     # def create_branch_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
     #     bp1 = self.bp1
