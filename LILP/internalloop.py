@@ -36,7 +36,9 @@ class InternalLoop(Loop):
         mismatch2_nt1 = self.RNA[self.base_pairs[1].i - 2]
         mismatch2_nt2 = self.RNA[self.base_pairs[1].j]
 
-        common_term = initiation_df.loc[self.size, "internal"] + asymmetry * abs(self.bp2.i - self.bp1.i - self.bp1.j + self.bp2.j) if self.is_valid_size() else M        
+        initiation = initiation_df.loc[self.size, "internal"] if self.size <= 30 else initiation_df.loc[6, "internal"] + scale * 1.08 * np.log(self.size / 6)
+
+        common_term = initiation + asymmetry * abs(self.bp2.i - self.bp1.i - self.bp1.j + self.bp2.j) if self.is_valid_size() else M        
         AU_closure_1 = self.bp1.nt1 + self.bp1.nt2 == 'AU' or self.bp1.nt1 + self.bp1.nt2 == 'UA'
         GU_closure_1 = self.bp1.nt1 + self.bp1.nt2 == 'GU' or self.bp1.nt1 + self.bp1.nt2 == 'UG'
         AU_closure_2 = self.bp2.nt1 + self.bp2.nt2 == 'AU' or self.bp2.nt1 + self.bp2.nt2 == 'UA'  
@@ -91,59 +93,44 @@ class InternalLoop(Loop):
             inequality = gp.LinExpr([1], [self.var])
             model.addConstr(inequality == 0, f'IS-{self.base_pairs[0].i}-{self.base_pairs[0].j}-{self.base_pairs[1].i}-{self.base_pairs[1].j}')
 
-    # def create_internal_ifthen_constraint(self, model: gp.Model) -> None:
-    #     bp1 = self.base_pairs[0]
-    #     bp2 = self.base_pairs[1]
+    def create_internal_ifthen_constraint(self, model: gp.Model) -> None:
+        bp1 = self.base_pairs[0]
+        bp2 = self.base_pairs[1]
 
-    #     inequality = gp.LinExpr(0)                       
+        inequality = gp.LinExpr(0)                       
 
-    #     for u in range(bp1.i + 1, bp2.i):
-    #         nucleotide = model.getVarByName(f'Y_{u}')
-    #         inequality.add(gp.LinExpr([1],[nucleotide]))
+        for u in range(bp1.i + 1, bp2.i):
+            nucleotide = model.getVarByName(f'Y_{u}')
+            inequality.add(gp.LinExpr([1],[nucleotide]))
 
-    #     for u in range(bp2.j + 1, bp1.j):
-    #         nucleotide = model.getVarByName(f'Y_{u}')
-    #         inequality.add(gp.LinExpr([1],[nucleotide]))
+        for u in range(bp2.j + 1, bp1.j):
+            nucleotide = model.getVarByName(f'Y_{u}')
+            inequality.add(gp.LinExpr([1],[nucleotide]))
             
-    #     inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
-    #     model.addConstr(inequality <= self.size + 1, f'IIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+        inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
+        model.addConstr(inequality <= self.size + 1, f'IIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
     # def create_internal_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
-    #     bp1 = self.base_pairs[0]
-    #     bp2 = self.base_pairs[1]
-
-    #     inequality = gp.LinExpr(0) 
-    #     matches = BasePair._find_base_pair_in_twossq(base_pairs, bp1.i, bp2.i, bp2.j, bp1.j)        
-
-    #     if matches:
-    #         for bp in matches:
-    #             nbp = model.getVarByName(f'Y_{bp.i}_{bp.j}')
-    #             inequality.add(gp.LinExpr([1], [nbp]))                     
-            
-    #     inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
-    #     model.addConstr(inequality <= len(matches) + 1, f'IIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
-
-    def create_internal_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
-            bp1 = self.base_pairs[0]
-            bp2 = self.base_pairs[1]
+    #         bp1 = self.base_pairs[0]
+    #         bp2 = self.base_pairs[1]
     
-            inequality = gp.LinExpr(0)
+    #         inequality = gp.LinExpr(0)
 
-            ssq1 = model.getVarByName(f'SSQ_{bp1.i}_{bp2.i}')
-            inequality.add(gp.LinExpr([1],[ssq1]))
+    #         ssq1 = model.getVarByName(f'SSQ_{bp1.i}_{bp2.i}')
+    #         inequality.add(gp.LinExpr([1],[ssq1]))
 
-            ssq2 = model.getVarByName(f'SSQ_{bp2.j}_{bp1.j}')
-            inequality.add(gp.LinExpr([1],[ssq2]))
+    #         ssq2 = model.getVarByName(f'SSQ_{bp2.j}_{bp1.j}')
+    #         inequality.add(gp.LinExpr([1],[ssq2]))
 
-            matches = BasePair._find_base_pair_btwn_twossq(base_pairs, bp1.i, bp2.i, bp2.j, bp1.j)
-            if matches:
-                for bp in matches:
-                    nbp = model.getVarByName(f'Y_{bp.i}_{bp.j}')
-                    inequality.add(gp.LinExpr([1], [nbp]))   
+    #         matches = BasePair._find_base_pair_btwn_twossq(base_pairs, bp1.i, bp2.i, bp2.j, bp1.j)
+    #         if matches:
+    #             for bp in matches:
+    #                 nbp = model.getVarByName(f'Y_{bp.i}_{bp.j}')
+    #                 inequality.add(gp.LinExpr([1], [nbp]))   
                                    
                 
-            inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
-            model.addConstr(inequality <= len(matches) + 3, f'IIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+    #         inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
+    #         model.addConstr(inequality <= len(matches) + 3, f'IIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
     
 
     # def create_internal_onlyif_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:

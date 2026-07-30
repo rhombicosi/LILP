@@ -11,7 +11,7 @@ M = 10000
 LARGE = 70
 BRANCH_LIMIT = 40
 BRANCH_START = 4# 4 for 50-60nts #6 FOR 80-90nts
-SSQ_MAX = 20
+U_MAX = 16
 # BRANCH_D = 6
 # CBRANCH_D = 12
 
@@ -59,13 +59,13 @@ class InternalType(Enum):
     INTGEN = "general"
 
 MAX_LOOP_SIZES = {
-        LoopType.HAIRPIN: 12,
+        LoopType.HAIRPIN: 15,
         LoopType.INTERNAL: 10,
-        LoopType.BULGE: 6,
+        LoopType.BULGE: 8,
         LoopType.MULTI: 8,
-        LoopType.BRANCH: 14,
+        LoopType.BRANCH: 15,
         LoopType.BRANCHPAIR: 7,
-        LoopType.CBRANCH: 9
+        LoopType.CBRANCH: 10
     }
 
 MIN_LOOP_SIZES = {
@@ -73,8 +73,8 @@ MIN_LOOP_SIZES = {
         LoopType.INTERNAL: 2,
         LoopType.BULGE: 1,
         LoopType.MULTI: 14,
-        LoopType.BRANCH: 7,
-        LoopType.BRANCHPAIR: 7,
+        LoopType.BRANCH: 5,
+        LoopType.BRANCHPAIR: 5,
         LoopType.CBRANCH: 14
     }
 
