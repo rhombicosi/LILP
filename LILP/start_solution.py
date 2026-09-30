@@ -52,6 +52,7 @@ def generate_start_sol(dotbracket_file, sol_start):
                 loop_vars.append(f'P_{left[1]}_{right[0]}')
 
     juncs = bg.junctions[:-1]
+    # print(juncs)
 
     for j in juncs:
         pairs = []
@@ -90,7 +91,7 @@ def generate_start_sol(dotbracket_file, sol_start):
     # result = "_" + "_".join(str(n) for p in multi_indices for n in p)
     # loop_vars.append(f'MULTI{result}')
 
-    print(set(loop_vars))
+    # print(set(loop_vars))
 
     vars_to_one = set(loop_vars)
     # sol_path = "data\solution.sol"
@@ -100,27 +101,3 @@ def generate_start_sol(dotbracket_file, sol_start):
         for var in sorted(vars_to_one):
             f.write(f"{var} 1\n")
         f.write("End\n")
-
-# seq_no = 2
-# chain_file = seq_files[seq_no]
-# chain_name_with_ext = os.path.basename(chain_file)        
-# chain_name_without_ext = os.path.splitext(chain_name_with_ext)[0]
-# lp_file_name = chain_name_without_ext
-# seq_data = parse_seq_file(chain_file)
-# rna = seq_data['sequence'].upper()
-
-
-# start_name = 'lilp-branch'
-# model_name = 'lilp-branch'
-
-# sol_start = os.path.join(solstart_dir, f'{lp_file_name}-{model_name}-start.sol')
-
-# dotbracket_file = f'{dot_bracket_start_dir}/{lp_file_name}-dotbrackets-{start_name}.txt'
-
-# dotbracket_file = f'{dot_bracket_start_dir}/test.txt'
-# sol_start = os.path.join(solstart_dir, f'start.sol')
-
-# dotbracket_file = f'{dot_bracket_start_dir}/{lp_file_name}-dotbrackets-{start_name}.txt'
-# sol_start = f'{solstart_dir}/{lp_file_name}-{model_name}-start.sol'
-
-# generate_start_sol(dotbracket_file, sol_start)

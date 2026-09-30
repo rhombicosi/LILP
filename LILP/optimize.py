@@ -67,7 +67,7 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     rna_model.model.setParam("MIPGap", 0.002)
     rna_model.model.setParam("Threads", 8)
     rna_model.model.setParam("DisplayInterval", 3)
-    rna_model.model.setParam("Method", 3)     
+    # rna_model.model.setParam("Method", 3)     
     rna_model.model.setParam("NodefileStart", 0.3)  # start disk swapping earlier
     
     # if start:

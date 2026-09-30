@@ -22,7 +22,7 @@ class HairpinLoop(Loop):
                 G += spec_GU_clos
             
             # if self.mistmatch_nt1 + self.mistmatch_nt2 == 'GA' or self.mistmatch_nt1 + self.mistmatch_nt2 == 'UU':
-            #     G += hp_mismatch['GA']
+                # G += hp_mismatch['GA']
 
             if self.mistmatch_nt1 + self.mistmatch_nt2 == 'GG':
                 G += hp_mismatch['GG']
@@ -89,12 +89,13 @@ class HairpinLoop(Loop):
             inequality.add(gp.LinExpr([-1], [self.base_pairs[0].var]))
             model.addConstr(inequality <= 1, f'HOI_{self.base_pairs[0].i}_{self.base_pairs[0].j}_{u}')
 
-    def create_hairpin_max_number_constraint(model: gp.Model, hairpin_loops: List["HairpinLoop"]) -> None:
+    def create_hairpin_number_constraint(model: gp.Model, hairpin_loops: List["HairpinLoop"]) -> None:
         inequality = gp.LinExpr(0)
 
         for hl in hairpin_loops:
             inequality.add(gp.LinExpr([1], [hl.var]))
-        model.addConstr(inequality <= MAX_NUM_OF_LOOPS[hl.type], f'HMN')
+        model.addConstr(inequality >= MIN_NUM_OF_LOOPS[hl.type], f'HMINNUM')
+        model.addConstr(inequality <= MAX_NUM_OF_LOOPS[hl.type], f'HMAXNUM')
         model.update()    
 
 

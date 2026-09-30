@@ -35,9 +35,9 @@ class InternalBranch():
         
         # if self.is_valid_size():
         #     if bp2.i - bp1.j == 1:
-        #         G = wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
+        #         G = SCALE * B + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2]
         #     elif bp2.i - bp1.j == 2:
-        #         G = wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
+        #         G = SCALE * B + wcf_df.loc[bp1.nt1 + bp1.nt2, bp2.nt1 + bp2.nt2] + intnn_df.loc[bp1.nt1 + bp1.nt2][mismatch1_nt1 + mismatch1_nt2]
         #     else:
         #         G = SCALE * B
         # else:
@@ -66,8 +66,8 @@ class InternalBranch():
             inequality.add(gp.LinExpr([1],[nucleotide]))
             
         inequality.add(gp.LinExpr([1, 1, -1],[bp1.var, bp2.var, self.var]))
-        model.addConstr(inequality <= self.distance + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')    
-
+        model.addConstr(inequality <= self.distance + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
+    
     # def create_branch_ifthen_constraint(self, model: gp.Model, base_pairs: List[BasePair]) -> None:
     #     bp1 = self.bp1
     #     bp2 = self.bp2
@@ -142,7 +142,7 @@ class InternalBranch():
             inequality = gp.LinExpr(0)
             inequality.add(gp.LinExpr([3], [self.var]))
             inequality.add(gp.LinExpr([-1, -1],[bp1.var, bp2.var]))
-            model.addConstr(inequality <= 1, f'BOI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')       
+            model.addConstr(inequality <= 1, f'BROI-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')       
 
     def create_branch_max_number_constraint(model: gp.Model, branches: List["InternalBranch"]) -> None:
         inequality = gp.LinExpr(0)
@@ -168,7 +168,7 @@ class BranchPair(BasePair):
     
     def is_valid_size(self) -> bool:
         n = len(self.rna)
-        return self.distance >= MIN_LOOP_SIZES[self.type] and self.i > BRANCH_START and self.j < n - BRANCH_START
+        return self.distance >= MIN_LOOP_SIZES[self.type] and self.i > BRANCH_START and self.j <= n - BRANCH_START
     
     def calculate_energy(self) -> int:
         if self.is_valid_size():
@@ -233,7 +233,8 @@ class ClosingBranch():
     
     def calculate_energy(self) -> int:
         if self.is_valid_size():
-            G = SCALE * (A + B)
+            # G = SCALE * (A + B)
+            G = SCALE * A
         else:
             G = M
         return round(G)
@@ -280,7 +281,7 @@ class ClosingBranch():
         bpvar = model.getVarByName(f'BP_{bp2.i}_{bp2.j}')
 
         for u in range(bp2.j + 1, bp1.j):
-            nucleotide = model.getVarByName(f'X_{u}')
+            nucleotide = model.getVarByName(f'Z_{u}')
             inequality.add(gp.LinExpr([1],[nucleotide]))
 
         inequality.add(gp.LinExpr([1, 1, 1, -1],[bp1.var, bp2.var, bpvar, self.var]))

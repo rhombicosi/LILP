@@ -35,7 +35,7 @@ class LILP:
 
     def create_nucleotides(self, first, last) -> None:
         for i in range(first, last + 1):
-            # var = self.model.addVar(vtype=GRB.BINARY, name=f'X_{i}')
+            var = self.model.addVar(vtype=GRB.BINARY, name=f'X_{i}')
             var = self.model.addVar(vtype=GRB.BINARY, name=f'Y_{i}')
             var = self.model.addVar(vtype=GRB.BINARY, name=f'Z_{i}') 
             self.nucleotides.append(var)
@@ -105,9 +105,9 @@ class LILP:
     def create_hairpin_loops(self) -> None:
         for bp in self.base_pairs:
             hairpin = HairpinLoop([bp], self.rna_seq)
-            # if hairpin.size < U_MAX:
-            hairpin.add_variable(self.model)
-            self.hairpin_loops.append(hairpin)
+            if hairpin.size < U_MAX:
+                hairpin.add_variable(self.model)
+                self.hairpin_loops.append(hairpin)
         self.model.update()
 
     def create_stem_loops(self) -> None:
@@ -124,9 +124,9 @@ class LILP:
             for bp2 in self.base_pairs:
                 if bp2.i > bp1.i + 1 and bp2.j < bp1.j - 1:
                     internal = InternalLoop([bp1, bp2], self.rna_seq)
-                    # if internal.bp2.i - internal.bp1.i - 1 < U_MAX and internal.bp1.j - internal.bp2.j - 1 < U_MAX:
-                    internal.add_variable(self.model)
-                    self.internal_loops.append(internal)
+                    if internal.bp2.i - internal.bp1.i - 1 < U_MAX and internal.bp1.j - internal.bp2.j - 1 < U_MAX:
+                        internal.add_variable(self.model)
+                        self.internal_loops.append(internal)
         self.model.update()
 
     def create_bulge_loops(self) -> None:
@@ -134,9 +134,9 @@ class LILP:
             for bp2 in self.base_pairs:
                 if (bp2.i == bp1.i + 1 and bp2.j < bp1.j - 1) or (bp2.i > bp1.i + 1 and bp2.j == bp1.j - 1):
                     bulge = BulgeLoop([bp1, bp2], self.rna_seq)
-                    # if bulge.size < U_MAX:
-                    bulge.add_variable(self.model)
-                    self.bulge_loops.append(bulge)
+                    if bulge.size < U_MAX:
+                        bulge.add_variable(self.model)
+                        self.bulge_loops.append(bulge)
         self.model.update()
 
     def create_multi_loops(self) -> None:
@@ -157,11 +157,10 @@ class LILP:
         for bp1 in self.base_pairs:
             for bp2 in self.base_pairs:
                 if bp2.i > bp1.j:
-                    # if bp1.j - bp1.i <= n/2 and bp2.j - bp2.i <= n/2:
                     branch = InternalBranch([bp1, bp2], self.rna_seq)
-                    # if branch.distance < U_MAX:
-                    branch.add_variable(self.model)
-                    self.branches.append(branch)
+                    if branch.distance < U_MAX:
+                        branch.add_variable(self.model)
+                        self.branches.append(branch)
         self.model.update()
 
     def create_branch_pairs(self):
@@ -176,9 +175,9 @@ class LILP:
             for bp2 in self.base_pairs:
                 if bp1.i < bp2.i and bp2.j < bp1.j and (bp2.i - bp1.i - 1 >= MIN_D + 2):
                     branch = ClosingBranch([bp1, bp2], self.rna_seq)
-                    # if branch.distance < U_MAX:
-                    branch.add_variable(self.model)
-                    self.cbranches.append(branch)
+                    if branch.distance < U_MAX:
+                        branch.add_variable(self.model)
+                        self.cbranches.append(branch)
         self.model.update()
 
     # def create_multiloop(self) -> None:
@@ -194,20 +193,20 @@ class LILP:
 
     def add_unpaired_nucleotides_constraints(self, first, last) -> None:
         for i in range(first, last + 1):
-            # inequality1 = gp.LinExpr(0)
+            inequality1 = gp.LinExpr(0)
             inequality2 = gp.LinExpr(0)
             inequality3 = gp.LinExpr(0)
             matches = BasePair._find_base_pairs_with_index(self.base_pairs, i)
 
             if matches:
                 for bp in matches:
-                    # inequality1.add(gp.LinExpr([1], [bp.var]))
+                    inequality1.add(gp.LinExpr([1], [bp.var]))
                     inequality2.add(gp.LinExpr([1], [bp.var]))
                     inequality3.add(gp.LinExpr([1], [bp.var]))
                 
-                # nucleotide = self.model.getVarByName(f'X_{i}')
-                # inequality1.add(gp.LinExpr([1], [nucleotide]))
-                # self.model.addConstr(inequality1 == 1, f'UNX_{i}')
+                nucleotide = self.model.getVarByName(f'X_{i}')
+                inequality1.add(gp.LinExpr([1], [nucleotide]))
+                self.model.addConstr(inequality1 == 1, f'UNX_{i}')
 
                 nucleotide = self.model.getVarByName(f'Y_{i}')
                 inequality2.add(gp.LinExpr([1], [nucleotide]))
@@ -299,12 +298,13 @@ class LILP:
     def add_hairpin_constraints(self) -> None:
         for hl in self.hairpin_loops:
             if hl.energy > 0:
-                hl.create_hairpin_ifthen_constraint(self.model, self.base_pairs)
+                if hl.size < LARGE:
+                    hl.create_hairpin_ifthen_constraint(self.model, self.base_pairs)
             else:
                 hl.create_hairpin_onlyif_constraint(self.model, self.base_pairs)
 
-    def add_hairpin_max_number_constraint(self) -> None:
-        HairpinLoop.create_hairpin_max_number_constraint(self.model, self.hairpin_loops)
+    def add_hairpin_number_constraint(self) -> None:
+        HairpinLoop.create_hairpin_number_constraint(self.model, self.hairpin_loops)
 
     def add_internal_size_constraints(self) -> None:
         for il in self.internal_loops:
@@ -314,7 +314,8 @@ class LILP:
     def add_internal_constraints(self)-> None:        
         for il in self.internal_loops:                
             if il.energy > 0:
-                il.create_internal_ifthen_constraint(self.model)
+                if il.size < LARGE:
+                    il.create_internal_ifthen_constraint(self.model)
             else:
                 il.create_internal_onlyif_constraint(self.model, self.base_pairs)
 
@@ -329,7 +330,8 @@ class LILP:
     def add_bulge_constraints(self) -> None:
         for bl in self.bulge_loops:
             if bl.energy > 0:
-                bl.create_bulge_ifthen_constraint(self.model)
+                if bl.size < LARGE:
+                    bl.create_bulge_ifthen_constraint(self.model, self.base_pairs)
             else:
                 bl.create_bulge_onlyif_constraint(self.model, self.base_pairs)
 
@@ -365,9 +367,11 @@ class LILP:
     def add_branch_constraints(self) -> None:
         for b in self.branches:
             if b.energy > 0:
-                b.create_branch_ifthen_constraint(self.model)
+                if b.distance < LARGE:
+                    b.create_branch_ifthen_constraint(self.model)
             else:
-                b.create_branch_onlyif_constraint(self.model, self.base_pairs)
+                if b.distance < LARGE:
+                    b.create_branch_onlyif_constraint(self.model, self.base_pairs)
         self.model.update()
 
     def add_branch_pair_distance_constraints(self) -> None:
@@ -391,7 +395,8 @@ class LILP:
     def add_cbranch_constraints(self) -> None:
         for cb in self.cbranches:
             if cb.energy > 0:
-                cb.create_closing_branch_ifthen_constraint(self.model)
+                if cb.distance < LARGE:
+                    cb.create_closing_branch_ifthen_constraint(self.model)
             else:
                 cb.create_closing_branch_onlyif_constraint(self.model, self.base_pairs)
         self.model.update()
@@ -549,7 +554,7 @@ class LILP:
             # self.add_stem_onlyif_constraints()
             self.add_stem_constraints()
         self.add_unpaired_nucleotides_constraints(first, last)
-        # self.add_max_unpaired_region_constraints()
+        self.add_max_unpaired_region_constraints()
         # self.add_not_pairs_constraints()
         self.add_subsequences_constraints()
         if hairpin:
@@ -557,7 +562,7 @@ class LILP:
             self.add_hairpin_constraints()
             # self.add_hairpin_ifthen_constraints()
             # self.add_hairpin_onlyif_constraints()            
-            # self.add_hairpin_max_number_constraint()
+            # self.add_hairpin_number_constraint()
         if internal:
             self.add_internal_size_constraints()
             self.add_internal_constraints()
@@ -583,7 +588,7 @@ class LILP:
         # self.add_energy_constraint(stem, hairpin, internal, bulge, branch, cbranch)
         # self.add_lowest_energy_constraint(stem, hairpin, internal, bulge, branch, cbranch)
 
-# seq_number = 1
+# seq_number = 15
 # chain_file = seq_files[seq_number]
 # chain_name_with_ext = os.path.basename(chain_file)        
 # chain_name_without_ext = os.path.splitext(chain_name_with_ext)[0]
@@ -599,7 +604,7 @@ class LILP:
 # first = 1
 # last = len(rna)
 
-# rna_model.create_variables(0, 0, 0, 0, 0, 0, first, last)
+# rna_model.create_variables(0, 1, 1, 1, 1, 0, first, last)
 # rna_model.create_constraints(0, 0, 0, 0, 0, 0, first, last)
 # rna_model.create_objective(0, 0, 0, 0, 0, 1)
 

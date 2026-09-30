@@ -84,7 +84,7 @@ class BulgeLoop(Loop):
     #         inequality.add(gp.LinExpr([1, 1, -1], [bp1.var, bp2.var, self.var]))
     #         model.addConstr(inequality <= len(matches) + 1, f'BIT-{bp1.i}-{bp1.j}-{bp2.i}-{bp2.j}')
 
-    def create_bulge_ifthen_constraint(self, model: gp.Model) -> None:
+    def create_bulge_ifthen_constraint(self, model: gp.Model,  base_pairs: List[BasePair]) -> None:
             bp1 = self.base_pairs[0]
             bp2 = self.base_pairs[1]  
     

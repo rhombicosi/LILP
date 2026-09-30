@@ -5,13 +5,12 @@ MIN_D = 3
 MULTI_SIZE = 15
 MULTI_MIN_D = 7
 MULTI_BOUND = 5
-MFE = -2200
+MFE = -3200
 SCALE = 100
 M = 10000
 LARGE = 70
-BRANCH_LIMIT = 40
-BRANCH_START = 4# 4 for 50-60nts #6 FOR 80-90nts
-U_MAX = 16
+BRANCH_START = 4 # 0 for 0-60 nts#4 for 70-80nts #6 FOR 80-90nts
+U_MAX = 16 # max number of consequtive unpaired nucleotides
 # BRANCH_D = 6
 # CBRANCH_D = 12
 
@@ -24,8 +23,8 @@ Cbulge = -0.9
 # A = 8.4 # intitiation
 # B = -0.8 # branches
 # C = 0.0 # unpaired nucleotides
-A = 9.3#3.4#1.0#9.3#3.4#10.1 # intitiation
-B = 1.375#2.5 #2.1125#1.375#-0.6#0.4#1.2#0.6#0.6#-0.6#0.4#-0.3 # branches
+A = 1.2 #9.3#3.4#1.0#9.3#3.4#10.1 # intitiation
+B = 0.4 #1.0 #1.53 #0.4 #1.375#2.5 #2.1125#1.375#-0.6#1.2#0.6#0.6#-0.6#0.4#-0.3 # branches
 C = -0.3 # unpaired nucleotides
 # Logarithmic
 # A = 10.1 # intitiation
@@ -59,13 +58,13 @@ class InternalType(Enum):
     INTGEN = "general"
 
 MAX_LOOP_SIZES = {
-        LoopType.HAIRPIN: 15,
-        LoopType.INTERNAL: 10,
-        LoopType.BULGE: 8,
+        LoopType.HAIRPIN: 12, #U_MAX - 1, #12,
+        LoopType.INTERNAL: 10,#U_MAX - 1, #10,
+        LoopType.BULGE: 6, #U_MAX - 1,#6,
         LoopType.MULTI: 8,
-        LoopType.BRANCH: 15,
-        LoopType.BRANCHPAIR: 7,
-        LoopType.CBRANCH: 10
+        LoopType.BRANCH: 14,#U_MAX - 1,#14,
+        # LoopType.BRANCHPAIR: 7,
+        LoopType.CBRANCH: 5 #U_MAX - 1,#9
     }
 
 MIN_LOOP_SIZES = {
@@ -73,13 +72,21 @@ MIN_LOOP_SIZES = {
         LoopType.INTERNAL: 2,
         LoopType.BULGE: 1,
         LoopType.MULTI: 14,
-        LoopType.BRANCH: 5,
-        LoopType.BRANCHPAIR: 5,
+        LoopType.BRANCH: 7,
+        LoopType.BRANCHPAIR: 7,
         LoopType.CBRANCH: 14
     }
 
+MIN_NUM_OF_LOOPS = {
+        LoopType.HAIRPIN: 3, 
+        LoopType.INTERNAL: 2,
+        LoopType.BULGE: 5,
+        LoopType.MULTI: 1,
+        LoopType.BRANCH: 4
+    }
+
 MAX_NUM_OF_LOOPS = {
-        LoopType.HAIRPIN: 1, 
+        LoopType.HAIRPIN: 3, 
         LoopType.INTERNAL: 2,
         LoopType.BULGE: 5,
         LoopType.MULTI: 1,
