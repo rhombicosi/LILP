@@ -67,6 +67,10 @@ add the path
 
 `export PATH="$HOME/path/to/unafold/bin:$PATH"`
 
+### Install packages
+
+`python -m pip install -e .`
+
 ## CODE RUN
 1. In constants_paths.py set the range of lengths of the sequences to test. for example:
 

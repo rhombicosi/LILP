@@ -1,5 +1,5 @@
-from dloop import *
-from lilp_config import *
+from LILP.dloop import *
+from LILP.lilp_config import *
 
 class MultiLoop(Loop):
 

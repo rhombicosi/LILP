@@ -1,14 +1,14 @@
 import re
 import math
-from stemloop import *
-from hairpinloop import *
-from internalloop import *
-from bulgeloop import *
-from multiloop import *
-from branch import *
-from utils.constants_paths import *
-from utils.prepro_run import *
-from utils.prepro_utils import *
+from LILP.stemloop import *
+from LILP.hairpinloop import *
+from LILP.internalloop import *
+from LILP.bulgeloop import *
+from LILP.multiloop import *
+from LILP.branch import *
+from LILP.utils.constants_paths import *
+from LILP.utils.prepro_run import *
+from LILP.utils.prepro_utils import *
 
 def pairs2brackets(filepath, RNA): 
     lngth = len(RNA)

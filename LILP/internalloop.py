@@ -1,7 +1,7 @@
-from dloop import *
-from tnn_parameters.initiation_parameters import *
-from tnn_parameters.internal_parameters import *
-from lilp_config import *
+from LILP.dloop import *
+from LILP.tnn_parameters.initiation_parameters import *
+from LILP.tnn_parameters.internal_parameters import *
+from LILP.lilp_config import *
 
 class InternalLoop(Loop):
 

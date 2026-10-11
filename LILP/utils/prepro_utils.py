@@ -7,7 +7,7 @@ import re
 import RNA
 import tempfile
 # uncomment to run code in lilp.py
-from utils.constants_paths import *
+from LILP.utils.constants_paths import *
 # uncomment to run prepro_run
 # from constants_paths import *
 

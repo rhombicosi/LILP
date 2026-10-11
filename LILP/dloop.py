@@ -1,6 +1,6 @@
 from typing import List
-from basepair import *
-from lilp_config import *
+from LILP.basepair import *
+from LILP.lilp_config import *
 
 class Loop:
 

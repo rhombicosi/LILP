@@ -1,6 +1,6 @@
-from dloop import *
-from tnn_parameters.initiation_parameters import *
-from tnn_parameters.stem_parameters import *
+from LILP.dloop import *
+from LILP.tnn_parameters.initiation_parameters import *
+from LILP.tnn_parameters.stem_parameters import *
 
 class StemLoop(Loop):
 

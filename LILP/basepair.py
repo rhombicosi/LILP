@@ -1,8 +1,8 @@
 from typing import List
 import gurobipy as gp
 from gurobipy import GRB
-from lilp_config import *
-from tnn_parameters.stem_parameters import *
+from LILP.lilp_config import *
+from LILP.tnn_parameters.stem_parameters import *
 
 class BasePair:
 

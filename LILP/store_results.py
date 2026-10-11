@@ -1,7 +1,7 @@
 import pandas as pd
-from utils.sol_converter import *
-from utils.prepro_run import *
-from utils.constants_paths import *
+from LILP.utils.sol_converter import *
+from LILP.utils.prepro_run import *
+from LILP.utils.constants_paths import *
 from optimize import *
 
 def add_column(df, column_name, values):

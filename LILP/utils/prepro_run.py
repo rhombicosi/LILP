@@ -1,10 +1,7 @@
 import os
 # uncomment to run code in lilp.py
-from utils.prepro_utils import *
-from utils.constants_paths import *
-# uncomment to run prepro_run
-# from prepro_utils import *
-# from constants_paths import *
+from LILP.utils.prepro_utils import *
+from LILP.utils.constants_paths import *
 
 # create folders to write .lp model and optimization .sol results
 lp_dir = create_dir(lp_path, lp_folder_name)

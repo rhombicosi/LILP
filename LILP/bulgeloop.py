@@ -1,5 +1,5 @@
-from dloop import *
-from tnn_parameters.initiation_parameters import *
+from LILP.dloop import *
+from LILP.tnn_parameters.initiation_parameters import *
 
 class BulgeLoop(Loop):
 

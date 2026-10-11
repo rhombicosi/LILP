@@ -1,8 +1,8 @@
-from dloop import *
-from tnn_parameters.initiation_parameters import *
-from tnn_parameters.hairpin_parameters import *
-from tnn_parameters.terminal_mismatch import *
-from lilp_config import M
+from LILP.dloop import *
+from LILP.tnn_parameters.initiation_parameters import *
+from LILP.tnn_parameters.hairpin_parameters import *
+from LILP.tnn_parameters.terminal_mismatch import *
+from LILP.lilp_config import M
 
 class HairpinLoop(Loop):
 
