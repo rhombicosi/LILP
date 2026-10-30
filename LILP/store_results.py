@@ -29,8 +29,8 @@ add_column(results_df, 'MFE_vienna', vienna_MFEs)
 add_column(results_df, 'MFE_unafold', unafold_MFEs)
 print(results_df)
 
-n1 = 15 #55 #35
-n2 = 16 #56 #36 #len(seq_files)
+n1 = 15 #37 #55 #35
+n2 = 16  #38 #56 #36 #len(seq_files)
 
 for seq_no in range (n1, n2):
 
@@ -63,7 +63,7 @@ for seq_no in range (n1, n2):
     # PPV_gen, STY_gen, MCC_gen, PPV_rnastruct, STY_rnastruct, MCC_rnastruct, PPV_vienna, STY_vienna, MCC_vienna, PPV_unafold, STY_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, solstart_dir, start_name, dot_bracket_start_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir)
 
     ###### MAIN SOL OPTIMIZATION #######
-    model_name = 'branch-ssq' #'lilp-bcoaxial' #'lilp-branch'#'lilp-hairpin' 
+    model_name = 'cb-test' #'cb-xyz' #'lilp-bcoaxial' #'lilp-branch'#'lilp-hairpin' 
     stem = True
     hairpin = True
     internal = True

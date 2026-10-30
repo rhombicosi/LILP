@@ -21,17 +21,21 @@ def pairs2brackets(filepath, RNA):
         cnt = 1
         pairs = []
         
-        while line: 
-            if " 1" in line and "P_" in line:
-                # print("{}".format(line.strip()))
-                match = re.search(pattern, line)
-                i = int(match.group(1))
-                j = int(match.group(2))
+        while line:
+            parts = line.split()
+            if len(parts) >= 2 and parts[0].startswith("P_"):
+                try:
+                    if abs(float(parts[1]) - 1.0) < 1e-14:
+                        match = re.search(pattern, parts[0])
+                        if match:
+                            i = int(match.group(1))
+                            j = int(match.group(2))
+                            pairs.append((i, j))
+                            fold[i - 1] = "("
+                            fold[j - 1] = ")"
+                except ValueError:
+                    pass
 
-                pairs.append((i,j))
-                fold[i - 1] = "("
-                fold[j - 1] = ")"
-                
             line = fp.readline()
             cnt += 1
 
@@ -83,7 +87,18 @@ def calculate_sol_energy(filepath, rna):
 
     # Process lines
     for line in lines:
-        if line.strip().endswith('1'):
+        # if line.strip().endswith('1'):
+        parts = line.split()
+
+        if len(parts) < 2:
+            continue
+
+        try:
+            value = float(parts[1])
+        except ValueError:
+            continue
+
+        if abs(value - 1.0) < 1e-14:
             # Extract type strictly as a whole word before the first underscore
             type_match = re.match(r'^(STEM|HAIRPIN|INTERNAL|BULGE|MULTI|BRANCH|BP|CBRANCH)_', line)
             if type_match:
@@ -138,8 +153,8 @@ def calculate_sol_energy(filepath, rna):
                     bp1 = BasePair(i1, j1, rna)
                     bp2 = BasePair(i2, j2, rna)
                     branch = InternalBranch((bp1, bp2), rna)
-                    print(f'{element_type} :: ({i1}, {j1}), ({i2}, {j2}) :: {branch.energy}')
-                    energy += branch.energy
+                    # print(f'{element_type} :: ({i1}, {j1}), ({i2}, {j2}) :: {branch.energy}')
+                    # energy += branch.energy
                 
                 if element_type == 'BP':
                     i, j = indices

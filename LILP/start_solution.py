@@ -7,7 +7,11 @@ import forgi.graph.bulge_graph as cgb
 def generate_start_sol(dotbracket_file, sol_start):
 
     with open(dotbracket_file, "r") as f:
-        gen_brackets = f.read().strip()
+        # gen_brackets = f.read().strip()
+        for line in f:
+            line = line.strip()
+            if re.fullmatch(r'[().]+', line):
+                gen_brackets = line
 
     bg = cgb.BulgeGraph.from_dotbracket(gen_brackets)
     print("Dot-Bracket Notation:")

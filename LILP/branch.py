@@ -233,8 +233,8 @@ class ClosingBranch():
     
     def calculate_energy(self) -> int:
         if self.is_valid_size():
-            # G = SCALE * (A + B)
-            G = SCALE * A
+            G = SCALE * (A + B)
+            # G = SCALE * A
         else:
             G = M
         return round(G)
