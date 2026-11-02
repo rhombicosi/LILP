@@ -6,10 +6,7 @@ import subprocess
 import re
 import RNA
 import tempfile
-# uncomment to run code in lilp.py
 from LILP.utils.constants_paths import *
-# uncomment to run prepro_run
-# from constants_paths import *
 
 def sort_numeric_alpha(lst):
     def numeric_alpha_key(s):

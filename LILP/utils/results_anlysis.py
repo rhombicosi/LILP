@@ -1,10 +1,9 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from constants_paths import *
+from LILP.utils.constants_paths import *
 import numpy as np
 from scipy.optimize import curve_fit
-
 
 # ============================================================
 # Prepare results
@@ -332,7 +331,7 @@ def MipGap():
 
     ax.tick_params(labelsize=12)
 
-    ax.set_ylim(0, 50)
+    ax.set_ylim(0, 70)
 
     ax.grid(True, alpha=0.25, linewidth=1)
 
@@ -353,42 +352,154 @@ def MipGap():
 # ============================================================
 # violin plot INF: NNILP, RNAstructure, RNAfold, UNAfold
 # ============================================================
-def violin_ILP_DP(results_total, imgfile):
-    df_branch = pd.read_csv(f'{results_total}', sep=r"\s+")
 
-    cols_branch = ["INFILP", "INFRNAstr", "INFRNAFold", "INFUNAFold"]
-    data_branch = df_branch[cols_branch]
-    data_branch = data_branch.rename(columns={'INFILP': 'NNILP', 'INFRNAstr': 'RNAstructure', 'INFRNAFold' : 'RNAFold', 'INFUNAFold': 'UNAFold'})
-    means = data_branch.mean()
+def violin_ILP_DP(results_total, imgfile_prefix):
+    df = pd.read_csv(results_total, sep=r"\s+")
 
-    # plt.rcParams["font.family"] = "Century Gothic"
-    # plt.rcParams["font.size"] = 18
-    colors = {
-        'NNILP': '#BFC4D5',
-        'RNAstructure': '#FEBC98',
-        'RNAFold': '#424862',
-        'UNAFold': '#FB9A63'
+    metrics = {
+        "INF": ["INFILP", "INFRNAstr", "INFRNAFold", "INFUNAFold"],
+        "STY": ["STYILP", "STYRNAstr", "STYRNAFold", "STYUNAFold"],
+        "PPV": ["PPVILP", "PPVRNAstr", "PPVRNAFold", "PPVUNAFold"]
     }
 
-    fig, ax = plt.subplots(figsize=(10, 7.5), dpi=100)
-    fig.patch.set_alpha(0)
-    ax.patch.set_alpha(0)
+    rename = {
+        "INFILP": "NNILP",
+        "INFRNAstr": "RNAstructure",
+        "INFRNAFold": "RNAFold",
+        "INFUNAFold": "UNAFold",
+        "STYILP": "NNILP",
+        "STYRNAstr": "RNAstructure",
+        "STYRNAFold": "RNAFold",
+        "STYUNAFold": "UNAFold",
+        "PPVILP": "NNILP",
+        "PPVRNAstr": "RNAstructure",
+        "PPVRNAFold": "RNAFold",
+        "PPVUNAFold": "UNAFold"
+    }
 
-    sns.violinplot(data=data_branch, palette=colors, inner='point')
-    for i, m in enumerate(means):
-        plt.text(i, m, f"{m:.3f}", color="black", ha="center", va="bottom", fontweight="bold", fontsize=14)
+    colors = {
+        "NNILP": "#BFC4D5",
+        "RNAstructure": "#FEBC98",
+        "RNAFold": "#424862",
+        "UNAFold": "#FB9A63"
+    }
 
-    plt.title("INF Distribution", fontsize=16)
-    plt.ylabel("INF Value", fontsize=12)
-    plt.xticks(rotation=-10, fontsize=12)
-    plt.yticks(fontsize=12)
+    for metric, columns in metrics.items():
 
-    plt.ylim(0, 1.0)
-    plt.tight_layout()
+        data = df[columns].rename(columns=rename)
+        means = data.mean()
+        stds = data.std()
 
-    plt.savefig(imgfile, dpi=100, bbox_inches="tight", transparent=True)
-    
-    plt.show()
+        fig, ax = plt.subplots(figsize=(10, 7.5), dpi=100)
+        fig.patch.set_alpha(0)
+        ax.patch.set_alpha(0)
+
+        sns.violinplot(
+            data=data,
+            palette=colors,
+            inner="point",
+            ax=ax
+        )
+
+        # Annotate each violin with mean ± standard deviation
+        for i, method in enumerate(data.columns):
+            ax.text(
+                i,
+                means[method] + 0.025,
+                f"{means[method]:.3f} ± {stds[method]:.3f}",
+                color="black",
+                ha="center",
+                va="bottom",
+                fontweight="bold",
+                fontsize=11
+            )
+
+        ax.set_title(f"{metric} Distribution", fontsize=16)
+        ax.set_ylabel(f"{metric} Value", fontsize=12)
+        ax.set_xticklabels(data.columns, rotation=-10, fontsize=12)
+        ax.tick_params(axis="y", labelsize=12)
+        ax.set_ylim(0, 1.15)
+
+        plt.ylim(0, 1.0)
+        plt.tight_layout()
+        plt.savefig(
+            f"{imgfile_prefix}_{metric}.png",
+            dpi=300,
+            bbox_inches="tight",
+            transparent=True
+        )
+        plt.show()
+
+def plot_mean_std(results_total, imgfile_prefix):
+
+    df = pd.read_csv(results_total, sep=r"\s+")
+
+    metrics = {
+        'INF': ['INFILP', 'INFRNAstr', 'INFRNAFold', 'INFUNAFold'],
+        'STY': ['STYILP', 'STYRNAstr', 'STYRNAFold', 'STYUNAFold'],
+        'PPV': ['PPVILP', 'PPVRNAstr', 'PPVRNAFold', 'PPVUNAFold']
+    }
+
+    labels = ['NNILP', 'RNAstructure', 'RNAFold', 'UNAFold']
+
+    colors = [
+        '#BFC4D5',
+        '#FEBC98',
+        '#424862',
+        '#FB9A63'
+    ]
+
+    for metric, columns in metrics.items():
+
+        means = df[columns].mean().values
+        stds = df[columns].std().values
+
+        x = np.arange(len(labels))
+
+        fig, ax = plt.subplots(figsize=(8, 6), dpi=150)
+
+        fig.patch.set_alpha(0)
+        ax.patch.set_alpha(0)
+
+        ax.bar(
+            x,
+            means,
+            yerr=stds,
+            color=colors,
+            capsize=6,
+            edgecolor='black',
+            linewidth=0.7,
+            error_kw={'elinewidth': 1.5, 'capthick': 1.5}
+        )
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=15, fontsize=11)
+
+        ax.set_ylabel(metric, fontsize=12)
+        ax.set_title(f'{metric}: Mean ± SD', fontsize=14)
+
+        ax.set_ylim(0, 1.15)
+        ax.grid(axis='y', alpha=0.25)
+
+        # Display numerical mean and SD
+        for i, (mean, std) in enumerate(zip(means, stds)):
+            ax.text(
+                i,
+                mean + std + 0.025,
+                f'{mean:.2f} ± {std:.2f}',
+                ha='center',
+                fontsize=10
+            )
+
+        plt.tight_layout()
+        plt.savefig(
+            f'{imgfile_prefix}_{metric}.png',
+            dpi=300,
+            bbox_inches='tight',
+            transparent=True
+        )
+        plt.show()
+        plt.close(fig)
 
 # calculate fails percentage
 def failure_rate():
@@ -415,6 +526,7 @@ def failure_rate():
 # violin_ILP_DP(files_cleaned[3], "inf_vs_length_70_80.png")
 # violin_ILP_DP(files_cleaned[4], "inf_vs_length_80_90.png")
 violin_ILP_DP(f'{results_folder_name}/LILP_0_90_cb-xyz-total.txt', "inf_vs_length_0_90.svg")
+plot_mean_std(f'{results_folder_name}/LILP_0_90_cb-xyz-total.txt', "stat_0_90.svg")
 
 
 TimeBest()
