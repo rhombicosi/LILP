@@ -1,6 +1,6 @@
-from typing import List
 import gurobipy as gp
 from gurobipy import GRB
+from typing import List
 from LILP.lilp_config import *
 from LILP.tnn_parameters.stem_parameters import *
 
@@ -13,14 +13,11 @@ class BasePair:
         self.nt1 = RNA[i-1]
         self.nt2 = RNA[j-1]
         self.var = None
+        self.distance = self.calculate_distance()
         self.pair_penalty_energy = self.calculate_pair_penalty_energy()
-        self.distance = self.j - self.i - 1
 
-    def distance(self) -> int:
-        return self.j - self.i
-
-    def is_valid(self) -> bool:
-        return f'{self.nt1}{self.nt2}' in VALID_PAIRS and BasePair.distance(self) > MIN_D
+    def calculate_distance(self) -> int:
+        return self.j - self.i - 1
     
     def calculate_pair_penalty_energy(self) -> int:
         if self.nt1 + self.nt2 == 'AU' or self.nt1 + self.nt2 == 'UA' or self.nt1 + self.nt2 == 'GU' or self.nt1 + self.nt2 == 'UG':
@@ -28,6 +25,9 @@ class BasePair:
         else:
             G = 0
         return round(G)
+    
+    def is_valid(self) -> bool:
+        return f'{self.nt1}{self.nt2}' in VALID_PAIRS and self.distance >= MIN_D
             
     def add_variable(self, model: gp.Model, label: str) -> gp.Var:
         if self.is_valid():

@@ -1,7 +1,7 @@
 import gurobipy as gp
 from gurobipy import GRB
 from utils.prepro_utils import *
-from utils.sol_converter import *
+# from utils.sol_converter import *
 from lilp_config import *
 from basepair import *
 from dloop import *

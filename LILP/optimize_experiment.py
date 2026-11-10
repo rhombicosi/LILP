@@ -6,7 +6,7 @@ from utils.sol_converter import *
 from start_solution import *
 
 #len_start = 60
-seq_number = 37
+seq_number = 0
 
 # cwd = Path.cwd()
 # code_path = Path(__file__).parent.parent
