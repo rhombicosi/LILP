@@ -19,7 +19,6 @@ iniconfig==2.3.1
 isort==9.0.2
 Jinja2==3.1.6
 kiwisolver==1.5.0
--e git+ssh://git@github.com/rhombicosi/LILP.git@f2a5dc23827d794f5aeb6f612c60e006a28b299c#egg=lilp_project
 logging_exceptions==0.1.9
 mando==0.7.1
 MarkupSafe==3.0.4
