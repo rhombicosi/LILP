@@ -1,6 +1,6 @@
 from LILP.basepair import *
 from LILP.lilp_config import *
-from LILP.tnn_parameters.internal_parameters import *
+from LILP.parameters.internal_parameters import *
 
 class InternalBranch():
 
