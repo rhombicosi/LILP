@@ -41,6 +41,22 @@ def test_tnn_regression(seq, energy, structure, by_type, params):
     assert result == {'energy': energy, 'structure': structure, 'energy_by_type': by_type}
 
 
+def test_andronescu_matches_vienna_blstar():
+    # RNAfold (dangles 0) with the same BL* file: MFE structure (((((.....)).))), -1.31 kcal/mol;
+    # LILP differs by 1 in the bulge-1 energy (rounding/unit issue I8)
+    result = solve('GGAGCAGAAAGCAUCC', 'andronescu')
+    assert result['structure'] == '(((((.....)).)))'
+    assert result['energy'] == -132
+
+
+def test_loop_with_unpairable_nucleotide_is_paid():
+    # issue I13: A5, A15, A16 cannot pair (no U); the 1x3 internal loop that contains
+    # them used to be left out of the objective (energy -826 instead of -596)
+    result = solve('GGCGAGCAGAAAGCAAGCGCC', 'tnn')
+    assert result['energy_by_type'].get('INTERNAL') == 230
+    assert result['energy'] == -596
+
+
 def test_unknown_parameter_set_fails():
     env = {**os.environ, 'PYTHONPATH': f'{ROOT}:{ROOT / "LILP"}', 'LILP_PARAMS': 'turner'}
     out = subprocess.run([sys.executable, '-c', 'import LILP.parameters'], env=env, cwd=ROOT,
