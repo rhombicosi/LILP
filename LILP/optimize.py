@@ -1,3 +1,4 @@
+import os
 import time
 from utils.constants_paths import *
 from utils.prepro_run import *
@@ -63,9 +64,9 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.setParam('CoverCuts', 2)    # knapsack cover aggressiveness
     # rna_model.model.setParam('MIRCuts', 2)      # MIR cut aggressiveness
     # rna_model.model.setParam('CliqueCuts', 2)   # clique cut aggressiveness
-    rna_model.model.setParam("TimeLimit", 7200)
+    rna_model.model.setParam("TimeLimit", int(os.environ.get("LILP_TIME_LIMIT", 7200)))
     rna_model.model.setParam("MIPGap", 0.002)
-    rna_model.model.setParam("Threads", 8)
+    rna_model.model.setParam("Threads", int(os.environ.get("LILP_THREADS", 8)))
     rna_model.model.setParam("DisplayInterval", 3)
     # rna_model.model.setParam("Method", 3)     
     rna_model.model.setParam("NodefileStart", 0.3)  # start disk swapping earlier
@@ -111,6 +112,11 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     best_obj, best_obj_time = get_results()
     opt_time = time.time() - opt_start_time
     print(f'OPTIMIZATION TIME :: {opt_time}')
+
+    if rna_model.model.SolCount == 0:
+        # no feasible solution found within TimeLimit, there is no .sol to write
+        print('NO SOLUTION within the time limit')
+        return None, lp_file_name, opt_time, None, None
 
     rna_model.model.write(f'{sol_dir}/{lp_file_name}-{model_name}.sol')
 
@@ -166,4 +172,4 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
 
 # for f in range(8):
 #     filepath = f'{incumbent_dir}\lilp_{seq_number}_incumbent_{f}.sol'
-#     pairs2brackets(filepath, rna)
+#     pairs2brackets(filepath, rna)
