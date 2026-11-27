@@ -60,6 +60,13 @@ model_name = os.environ.get('LILP_MODEL_NAME', 'cb-xyz') #'lilp-bcoaxial' #'lilp
 sample = (sample_names(os.environ['LILP_SAMPLE'], int(os.environ.get('LILP_SAMPLE_SIZE', 100)))
           if os.environ.get('LILP_SAMPLE') else None)
 results_filename = f'LILP_{len_start}_{len_end}_{model_name}.txt'
+
+# warm start (LILP/warmstart): LILP_START = none | lilp_init | file; with a start, the cost of
+# producing it is taken from the budget LILP_TIME_LIMIT, statistics go to results/WS_<range>_<model>.tsv
+from warmstart import run as warm_start
+start_source = warm_start.source_name()
+budget = int(os.environ.get('LILP_TIME_LIMIT', 7200))
+ws_filename = f'WS_{len_start}_{len_end}_{model_name}.tsv'
 done = completed_sequences(f'{results_dir}/{results_filename}')
 
 n1 = int(os.environ.get('LILP_N1', 0))
@@ -111,8 +118,13 @@ for seq_no in range (n1, n2):
     # multi = False
     start = False 
 
-    #### NO START VERSION ####
-    gen_MFE, lp_name, opt_time, gap, best_obj_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last)
+    #### NO START VERSION (or warm start from LILP_START) ####
+    start_values, time_limit, ws, info = None, None, None, None
+    if start_source != 'none':
+        ws = warm_start.prepare(start_source, rna, chain_name_without_ext, model_name, budget, grb_log_dir)
+        start_values, time_limit, info = ws.pop('start_values'), ws['time_limit'], {}
+        print(f"WARM START {start_source}: {ws['start_pairs']} pairs, {ws['start_seconds']} s, time limit {time_limit:.1f} s")
+    gen_MFE, lp_name, opt_time, gap, best_obj_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last, start_values=start_values, time_limit=time_limit, info=info)
     #### WITH START VERSION ####
     # gen_MFE, lp_name, opt_time, gap, best_obj_time = optimize_lilp(rna, lp_file_name, model_name, stem, hairpin, internal, bulge, branch, cbranch, lp_dir, incumbent_dir, sol_dir, first, last, start, start_name, solstart_dir)
    
@@ -127,4 +139,6 @@ for seq_no in range (n1, n2):
     else:
         PPV_gen, STY_gen, MCC_gen, PPV_rnastruct, STY_rnastruct, MCC_rnastruct, PPV_vienna, STY_vienna, MCC_vienna, PPV_unafold, STY_unafold, MCC_unafold = sol_analyse(seq_files, seq_no, sol_dir, model_name, dot_bracket_dir, dot_bracket_archive_dir, dot_bracket_rnastructure_dir, dot_bracket_viennaRNA_dir, unafold_fold_dir)
 
+    if ws is not None:
+        warm_start.write_row(f'{results_dir}/{ws_filename}', ws, info)
     write_results_to_file(lp_name, len(rna), opt_time, best_obj_time, gap, gen_MFE/100, ref_MFEs[seq_no], rna_MFEs[seq_no], vienna_MFEs[seq_no], unafold_MFEs[seq_no], round(PPV_gen,2), round(PPV_rnastruct,2), round(PPV_vienna,2), round(PPV_unafold,2), round(STY_gen,2), round(STY_rnastruct,2), round(STY_vienna,2), round(STY_unafold,2), round(MCC_gen,2), round(MCC_rnastruct,2), round(MCC_vienna,2), round(MCC_unafold,2), results_dir, results_filename)
