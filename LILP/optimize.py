@@ -1,3 +1,4 @@
+import os
 import time
 from utils.constants_paths import *
 from utils.prepro_run import *
@@ -21,7 +22,28 @@ from callbacks import *
 
 #     return callback, lambda: (best_obj, best_obj_time)
 
-def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, cbranch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None) -> None:
+def _with_start_info(callback, info):
+    # warm start (warmstart/): besides the original callback, record the MIP start
+    # messages of the Gurobi log and the first / number of new solutions
+    info['start_messages'], info['n_sols'] = [], 0
+
+    def wrapped(model, where):
+        callback(model, where)
+        if where == GRB.Callback.MESSAGE:
+            message = model.cbGet(GRB.Callback.MSG_STRING)
+            if 'mip start' in message.lower():
+                info['start_messages'].append(message.strip())
+        elif where == GRB.Callback.MIPSOL:
+            info['n_sols'] += 1
+            if 'first_sol_time' not in info:
+                info['first_sol_time'] = model.cbGet(GRB.Callback.RUNTIME)
+                info['first_sol_obj'] = model.cbGet(GRB.Callback.MIPSOL_OBJ)
+
+    return wrapped
+
+def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hairpin: bool, internal: bool, bulge: bool, branch: bool, cbranch: bool, lp_dir: str, incumbent_dir: str, sol_dir: str, first = None, last = None, start = None, start_name = None, solstart_dir = None, start_values = None, time_limit = None, info = None) -> None:
+    # start_values: {variable name: value} partial MIP start (warmstart/), time_limit: overrides
+    # LILP_TIME_LIMIT (common budget of the warm start), info: dict filled with start statistics
     
     model_start_time = time.time()
     rna_model = LILP(rna, model_name)
@@ -43,10 +65,12 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
 
     model_time = time.time() - model_start_time
     print(f'MODEL CONSTRUCTION TIME :: {model_time}')
-    rna_model.model.write(f'{lp_dir}/{lp_file_name}-{model_name}.lp')
+    if os.environ.get('LILP_WRITE_LP', '1') == '1':   # .lp of a 150 nt model has hundreds of MB
+        rna_model.model.write(f'{lp_dir}/{lp_file_name}-{model_name}.lp')
 
     rna_model.model.setParam("LogFile", f'{grb_log_dir}/{lp_file_name}-log-{model_name}')
-    rna_model.model.setParam(GRB.Param.SolFiles, f'{incumbent_dir}/{lp_file_name}-incumbent-{model_name}') 
+    if os.environ.get('LILP_WRITE_INCUMBENTS', '1') == '1':   # every incumbent as a .sol file
+        rna_model.model.setParam(GRB.Param.SolFiles, f'{incumbent_dir}/{lp_file_name}-incumbent-{model_name}') 
     
     # rna_model.model.setParam("Cuts", 3)
     # rna_model.model.setParam("BQPCuts", 2)
@@ -63,9 +87,9 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
     # rna_model.model.setParam('CoverCuts', 2)    # knapsack cover aggressiveness
     # rna_model.model.setParam('MIRCuts', 2)      # MIR cut aggressiveness
     # rna_model.model.setParam('CliqueCuts', 2)   # clique cut aggressiveness
-    rna_model.model.setParam("TimeLimit", 7200)
+    rna_model.model.setParam("TimeLimit", time_limit if time_limit is not None else int(os.environ.get("LILP_TIME_LIMIT", 7200)))
     rna_model.model.setParam("MIPGap", 0.002)
-    rna_model.model.setParam("Threads", 8)
+    rna_model.model.setParam("Threads", int(os.environ.get("LILP_THREADS", 8)))
     rna_model.model.setParam("DisplayInterval", 3)
     # rna_model.model.setParam("Method", 3)     
     rna_model.model.setParam("NodefileStart", 0.3)  # start disk swapping earlier
@@ -95,6 +119,21 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
                 v.Start = round(int(solvars[v.VarName]), 1)
         rna_model.model.update()
 
+    if start_values:
+        # warm start: partial MIP start, Gurobi completes the variables that are not given
+        rna_model.model.NumStart = 1
+        rna_model.model.update()
+        n_set = 0
+        for var_name, value in start_values.items():
+            var = rna_model.model.getVarByName(var_name)
+            if var is not None:
+                var.Start = value
+                n_set += 1
+        rna_model.model.update()
+        if info is not None:
+            info['start_vars_set'] = n_set
+            info['start_vars_missing'] = len(start_values) - n_set
+
     # for v in rna_model.model.getVars():
     #     if v.VarName.startswith("HAIRPIN"):
     #         v.BranchPriority = 10
@@ -107,10 +146,21 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
 
     opt_start_time = time.time()
     callback, get_results = make_callback()
+    if info is not None:
+        callback = _with_start_info(callback, info)
     rna_model.model.optimize(callback)
     best_obj, best_obj_time = get_results()
     opt_time = time.time() - opt_start_time
     print(f'OPTIMIZATION TIME :: {opt_time}')
+    if info is not None:
+        info['status'] = rna_model.model.Status
+        info['runtime'] = rna_model.model.Runtime
+        info['final_obj'] = rna_model.model.ObjVal if rna_model.model.SolCount > 0 else float('nan')
+
+    if rna_model.model.SolCount == 0:
+        # no feasible solution found within TimeLimit, there is no .sol to write
+        print('NO SOLUTION within the time limit')
+        return None, lp_file_name, opt_time, None, None
 
     rna_model.model.write(f'{sol_dir}/{lp_file_name}-{model_name}.sol')
 
@@ -166,4 +216,4 @@ def optimize_lilp(rna: str, lp_file_name: str, model_name: str, stem: bool, hair
 
 # for f in range(8):
 #     filepath = f'{incumbent_dir}\lilp_{seq_number}_incumbent_{f}.sol'
-#     pairs2brackets(filepath, rna)
+#     pairs2brackets(filepath, rna)

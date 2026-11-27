@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # archive ii path
@@ -10,9 +11,10 @@ archive_path = (code_path/arch_rel_path).resolve()
 # folder name for files that should be excluded from test
 badfiles_dir = 'noctfiles'  
 
-# length for sequences to be tested
-len_start = 0
-len_end = 50
+# length for sequences to be tested (inclusive),
+# can be overridden by the environment, e.g. LILP_LEN_START=70 LILP_LEN_END=80
+len_start = int(os.environ.get('LILP_LEN_START', 0))
+len_end = int(os.environ.get('LILP_LEN_END', 50))
 
 # folders to save .seq and .ct files with sequences of seq_len
 seq_len_dir = f'RNA_seq_{len_start}_{len_end}'
