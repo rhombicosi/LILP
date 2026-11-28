@@ -215,6 +215,13 @@ class LILP:
                 nucleotide = self.model.getVarByName(f'Z_{i}')
                 inequality3.add(gp.LinExpr([1], [nucleotide]))
                 self.model.addConstr(inequality3 == 1, f'UNZ_{i}')
+            else:
+                # no possible partner: the nucleotide is always unpaired. Without this the
+                # X/Y/Z variables were free and a loop with positive energy containing
+                # this nucleotide could be left out of the objective (issue I13)
+                for copy in ('X', 'Y', 'Z'):
+                    nucleotide = self.model.getVarByName(f'{copy}_{i}')
+                    self.model.addConstr(nucleotide == 1, f'UN{copy}_{i}')
         self.model.update()
 
     def add_max_unpaired_region_constraints(self) -> None:
